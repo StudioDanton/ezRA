@@ -6252,7 +6252,9 @@ def plotEzCon088antBTVTByFreqBinAvgFall():
         # downsampling by averaging
         # (// is floor division)
         downsamplingStep = antLen // antXTVTDLen
-
+        if downsamplingStep < 1:
+            print('  Error downsamplingStep =', downsamplingStep)
+            return(1)
         antXTVTD = np.empty_like(antXTVT[:, :antXTVTDLen])
         for n in range(antXTVTDLen):
             downsamplingIndex = n * downsamplingStep
@@ -6346,7 +6348,9 @@ def plotEzCon098antBTVTByFreqBinMaxFall():
         # downsampling by maximizing
         # (// is floor division)
         downsamplingStep = antLen // antXTVTMaxDLen
-
+        if downsamplingStep < 1:
+            print('  Error downsamplingStep =', downsamplingStep)
+            return(1)
         antXTVTMaxD = np.empty_like(antXTVT[:, :antXTVTMaxDLen])
         for n in range(antXTVTMaxDLen):
             downsamplingIndex = n * downsamplingStep
@@ -9269,7 +9273,9 @@ def plotEzCon388antBTVTByFreqBinAvgAll():
         # downsampling by averaging
         # (// is floor division)
         downsamplingStep = antLen // antXTVTDLen
-
+        if downsamplingStep < 1:
+            print('  Error downsamplingStep =', downsamplingStep)
+            return(1)
         antXTVTD = np.empty_like(antXTVT[:, :antXTVTDLen])
         for n in range(antXTVTDLen):
             downsamplingIndex = n * downsamplingStep
@@ -9379,7 +9385,9 @@ def plotEzCon398antBTVTByFreqBinMaxAll():
         # downsampling by maximizing
         # (// is floor division)
         downsamplingStep = antLen // antXTVTMaxDLen
-
+        if downsamplingStep < 1:
+            print('  Error downsamplingStep =', downsamplingStep)
+            return(1)
         antXTVTMaxD = np.empty_like(antXTVT[:, :antXTVTMaxDLen])
         for n in range(antXTVTMaxDLen):
             downsamplingIndex = n * downsamplingStep
