@@ -235,11 +235,12 @@ def printUsage():
     #    ' relay with pulses)')
     #print('              -ezColUsbRelay   3            (1 SPST non-HID relay, driving feedRef ON or OFF)')
     print('              -ezColUsbRelay    0           (No relays driving a feed Dicke reference)')
+    print('              -ezColUsbRelay   10           (1 SPST HID relay,     driving feedRef ON or OFF, admin)')
     print('              -ezColUsbRelay   11           (1 SPST HID relay,     driving feedRef ON or OFF)')
-    print('              -ezColUsbRelay   15           (1 SPST non-HID relay, driving feedRef ON or OFF, no Linux)')
-    print('              -ezColUsbRelay   21           (2 SPST HID relays, #1 driving feedRef ON or OFF)')
-    print('              -ezColUsbRelay   22           (2 SPST HID relays, #2 driving feedRef ON or OFF)')
-    print('              -ezColUsbRelay   29           (2 SPST HID relays, driving a latching feedRef',
+    print('              -ezColUsbRelay   15           (1 SPST non-HID relay, driving feedRef ON or OFF)')
+    print('              -ezColUsbRelay   21           (2 SPST HID relays, #1 driving feedRef ON or OFF), admin')
+    print('              -ezColUsbRelay   22           (2 SPST HID relays, #2 driving feedRef ON or OFF), admin')
+    print('              -ezColUsbRelay   29           (2 SPST HID relays, admin, driving a latching feedRef',
         'relay with pulses)')
     print()
     print('              -ezColIntegQty   31000        (Number of readings to be integrated into',
@@ -833,7 +834,7 @@ def ezColArguments():
         coord1     = ezColGLonDeg
     coordMayBeNew = 1
 	
-    if ezColUsbRelay not in [0, 11, 15, 21, 22, 29]:
+    if ezColUsbRelay not in [0, 10, 11, 15, 21, 22, 29]:
         print()
         print()
         print()
@@ -1878,8 +1879,8 @@ def sdrTask(bandWidthHz, ezColGain, ezColBiasTee, freqBinQty, centerFreqAntHz, c
             #                   CommandApp_USBRelay.exe J34EL close 01
             #                   CommandApp_USBRelay.exe J34EL open 01
 
-            if ezColUsbRelay == 11:
-                # ezColUsbRelay = 11: 1 SPST HID relay, driving feedRef ON or OFF
+            if ezColUsbRelay == 10:
+                # ezColUsbRelay = 10: 1 SPST HID relay, driving feedRef ON or OFF
                 # for USB Relay that talks HID
                 ##os.system('sudo usbrelay BITFT_1=0 BITFT_2=0')
                 #os.system('sudo usbrelay HW348_1=0')        # works !
@@ -1898,23 +1899,35 @@ def sdrTask(bandWidthHz, ezColGain, ezColBiasTee, freqBinQty, centerFreqAntHz, c
                 #        Number of Relays = 1
                 #      HW348_1=0
                 # because of that last line, I use:
-                relayOff0 = 'sudo usbrelay HW348_1=0'
-                relayOn0  = 'sudo usbrelay HW348_1=1'
+                relayOff0 = 'sudo usbrelay HW348_1=0 -q'
+                relayOn0  = 'sudo usbrelay HW348_1=1 -q'
+                # initialize relays
+                os.system(relayOff0)
+                sleep(0.5) # Sleep for 0.5 seconds
+            elif ezColUsbRelay == 11:
+                # ezColUsbRelay = 11: 1 SPST HID relay, driving feedRef ON or OFF
+                # for USB Relay that talks HID
+                relayOff0 = 'usbrelay HW348_1=0 -q'
+                relayOn0  = 'usbrelay HW348_1=1 -q'
                 # initialize relays
                 os.system(relayOff0)
                 sleep(0.5) # Sleep for 0.5 seconds
             elif ezColUsbRelay == 15:
-                # ezColUsbRelay = 15: 1 SPST non-HID relay with serialSend.exe
+                # ezColUsbRelay = 15: 1 SPST non-HID relay with serial send
                 # for USB Relay that talks serial
-                relayOff0 = '#'             # linux: not yet implemented
-                relayOn0  = '#'             # linux: not yet implemented
+                #relayOff0 = 'stty -F /dev/ttyUSB0 9600; sleep 0.1s; echo echo -ne "\\xA0\\x01\\x00\\xA1" > /dev/ttyUSB0' # Working inside batch, Not working inside python
+                #relayOn0  = 'stty -F /dev/ttyUSB0 9600; sleep 0.1s; echo echo -ne "\\xA0\\x01\\x01\\xA2" > /dev/ttyUSB0' # Working inside batch, Not working inside python
+                #relayConf0 = 'sudo chmod 777 /dev/ttyUSB0' # working                
+                relayOff0 = 'python3 ' + os.path.dirname(__file__).replace(' ', '\ ') + os.path.sep + 'ezSerRelay.py /dev/ttyUSB0 9600 0'
+                relayOn0  = 'python3 ' + os.path.dirname(__file__).replace(' ', '\ ') + os.path.sep + 'ezSerRelay.py /dev/ttyUSB0 9600 1'
                 # initialize relays
-                #os.system(relayOff0)
+                os.system(relayOff0)
+                sleep(0.5) # Sleep for x seconds
             elif ezColUsbRelay == 21:
                 # ezColUsbRelay = 21: 2 SPST HID relays, #1 driving feedRef ON or OFF
                 # for USB Relay that talks HID
-                relayOff0 = 'sudo usbrelay BITFT_1=0 BITFT_2=0'
-                relayOn0  = 'sudo usbrelay BITFT_1=1 BITFT_2=0'
+                relayOff0 = 'sudo usbrelay BITFT_1=0 BITFT_2=0 -q'
+                relayOn0  = 'sudo usbrelay BITFT_1=1 BITFT_2=0 -q'
                 # initialize relays
                 # both relays off
                 os.system(relayOff0)
@@ -1922,8 +1935,8 @@ def sdrTask(bandWidthHz, ezColGain, ezColBiasTee, freqBinQty, centerFreqAntHz, c
             elif ezColUsbRelay == 22:
                 # ezColUsbRelay = 22: 2 SPST HID relays, #2 driving feedRef ON or OFF
                 # for USB Relay that talks HID
-                relayOff0 = 'sudo usbrelay BITFT_1=0 BITFT_2=0'
-                relayOn0  = 'sudo usbrelay BITFT_1=0 BITFT_2=1'
+                relayOff0 = 'sudo usbrelay BITFT_1=0 BITFT_2=0 -q'
+                relayOn0  = 'sudo usbrelay BITFT_1=0 BITFT_2=1 -q'
                 # initialize relays
                 # both relays off
                 os.system(relayOff0)
@@ -1946,10 +1959,10 @@ def sdrTask(bandWidthHz, ezColGain, ezColBiasTee, freqBinQty, centerFreqAntHz, c
                 #      BITFT_1=0
                 #      BITFT_2=0
                 # because of those 2 last lines, I use:
-                relayOff0 = 'sudo usbrelay BITFT_1=0 BITFT_2=0'
+                relayOff0 = 'sudo usbrelay BITFT_1=0 BITFT_2=0 -q'
                 relayOff1 = relayOff0
-                relayOn0  = 'sudo usbrelay BITFT_1=1 BITFT_2=0'
-                relayOn1  = 'sudo usbrelay BITFT_1=0 BITFT_2=1'
+                relayOn0  = 'sudo usbrelay BITFT_1=1 BITFT_2=0 -q'
+                relayOn1  = 'sudo usbrelay BITFT_1=0 BITFT_2=1 -q'
                 # initialize relays
                 # both relays off
                 os.system(relayOff0)
