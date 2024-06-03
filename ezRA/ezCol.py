@@ -206,6 +206,11 @@ def printUsage():
     print('              -ezColFreqBinQtyBits  10      (For 1024 freqBinQty frequencies)')
     print()
     print('              -ezColGain        9999        (Use max gain)')
+    print()
+    print('              -ezColBiasTee     0           (No internal bias-tee driving)')
+    print('              -ezColBiasTee     1           (Driving internal bias-tee OFF)')
+    print('              -ezColBiasTee     5           (Driving internal bias-tee ON)')
+    print()
     print('              -ezColOffsetPPM   5           (Tuner offset Parts-Per-Million (integer)')
     print('              -ezColAntBtwnRef  5           (number of Ant samples between Ref samples)')
     print()
@@ -283,6 +288,7 @@ def ezColArgumentsFile(ezDefaultsFileNameInput):
 
     global ezColFreqBinQtyBits              # integer
     global ezColGain                        # integer
+    global ezColBiasTee                     # integer
     global ezColAntBtwnRef                  # integer
 
     global ezColAzDeg                       # float
@@ -357,6 +363,9 @@ def ezColArgumentsFile(ezDefaultsFileNameInput):
 
             elif thisLine0Lower == '-ezColGain'.lower():
                 ezColGain = int(thisLineSplit[1])
+
+            elif thisLine0Lower == '-ezColBiasTee'.lower():
+                ezColBiasTee = int(thisLineSplit[1])
 
             elif thisLine0Lower == '-ezColAntBtwnRef'.lower():
                 ezColAntBtwnRef = int(thisLineSplit[1])
@@ -465,6 +474,7 @@ def ezColArgumentsCommandLine():
 
     global ezColFreqBinQtyBits              # integer
     global ezColGain                        # integer
+    global ezColBiasTee                     # integer
     global ezColAntBtwnRef                  # integer
 
     global ezColAzDeg                       # float
@@ -557,6 +567,10 @@ def ezColArgumentsCommandLine():
             elif cmdLineArgLower == '-ezColGain'.lower():
                 cmdLineSplitIndex += 1      # point to first argument value
                 ezColGain = int(cmdLineSplit[cmdLineSplitIndex])
+
+            elif cmdLineArgLower == '-ezColBiasTee'.lower():
+                cmdLineSplitIndex += 1      # point to first argument value
+                ezColBiasTee = int(cmdLineSplit[cmdLineSplitIndex])
 
             elif cmdLineArgLower == '-ezColAntBtwnRef'.lower():
                 cmdLineSplitIndex += 1      # point to first argument value
@@ -691,6 +705,7 @@ def ezColArguments():
 
     global ezColFreqBinQtyBits              # integer
     global ezColGain                        # integer
+    global ezColBiasTee                     # integer
     global ezColAntBtwnRef                  # integer
 
     global ezColAzDeg                       # float
@@ -749,6 +764,7 @@ def ezColArguments():
         #ezColFreqBinQtyBits = 10   # means freqBinQty will be 2 to the power of 10 = 2 ** 10 = 1024
 
         ezColGain = 9999            # silly big number which RtlSdr library will reduce
+        ezColBiasTee = 0            # no bias-tee driving
 
         ezColAntBtwnRef = 1         # number of Ant samples between REF samples
 
@@ -791,6 +807,19 @@ def ezColArguments():
     # process arguments from command line
     ezColArgumentsCommandLine()
 
+    if ezColBiasTee not in [0, 1, 5]:
+        print()
+        print()
+        print()
+        print()
+        print()
+        print(' ========== FATAL ERROR: ', ezColBiasTee, 'is an unrecognized value for ezColBiasTee')
+        print()
+        print()
+        print()
+        print()
+        exit()
+
     # now know coordType, assign coord0, and coord1
     if coordType == 0:
         coord0     = ezColAzDeg
@@ -803,7 +832,7 @@ def ezColArguments():
         coord0     = ezColGLatDeg
         coord1     = ezColGLonDeg
     coordMayBeNew = 1
-
+	
     if ezColUsbRelay not in [0, 11, 15, 21, 22, 29]:
         print()
         print()
@@ -850,6 +879,7 @@ def ezColArguments():
     print()
     print('   ezColFreqBinQtyBits =', ezColFreqBinQtyBits)
     print('   ezColGain           =', ezColGain)
+    print('   ezColBiasTee        =', ezColBiasTee)
     print('   ezColAntBtwnRef     =', ezColAntBtwnRef)
     print()
     print('   ezColAzDeg =', ezColAzDeg)
@@ -887,6 +917,7 @@ def main():
 
     global ezColFreqBinQtyBits              # integer
     global ezColGain                        # integer
+    global ezColBiasTee                     # integer
     global ezColAntBtwnRef                  # integer
 
     global ezColAzDeg                       # float
@@ -1205,9 +1236,9 @@ def main():
 
     sdrOutQueue = Queue()               #sdr to main communication
 
-    sdrProcess = Process(target=sdrTask, args=(bandWidthHz, ezColGain, freqBinQty, centerFreqAntHz, centerFreqRefHz, ezColUsbRelay, ezColAntBtwnRef,
+    sdrProcess = Process(target=sdrTask, args=(bandWidthHz, ezColGain, ezColBiasTee, freqBinQty, centerFreqAntHz, centerFreqRefHz, ezColUsbRelay, ezColAntBtwnRef,
         programStateQueue, ezColIntegQtyQueue, sdrOutQueue))
-    # sdrTask is started once, with arguments bandWidthHz, ezColGain, freqBinQty, centerFreqAntHz, centerFreqRefHz, ezColUsbRelay, and ezColAntBtwnRef.
+    # sdrTask is started once, with arguments bandWidthHz, ezColGain, ezColBiasTee, freqBinQty, centerFreqAntHz, centerFreqRefHz, ezColUsbRelay, and ezColAntBtwnRef.
     #   It will loop and read the latest inputs from programStateQueue and ezColIntegQtyQueue.
     #   At the end of each loop it will output one tuple through sdrOutQueue.
     #   The tuple includes sdrGain, rmsSpectrum, and dataFlagsS.
@@ -1643,9 +1674,9 @@ def main():
 
 
 
-def sdrTask(bandWidthHz, ezColGain, freqBinQty, centerFreqAntHz, centerFreqRefHz, ezColUsbRelay, ezColAntBtwnRef,
+def sdrTask(bandWidthHz, ezColGain, ezColBiasTee, freqBinQty, centerFreqAntHz, centerFreqRefHz, ezColUsbRelay, ezColAntBtwnRef,
         programStateQueue, ezColIntegQtyQueue, sdrOutQueue):
-    # sdrTask is started once, with arguments bandWidthHz, ezColGain, freqBinQty, centerFreqAntHz, centerFreqRefHz, ezColUsbRelay, and ezColAntBtwnRef.
+    # sdrTask is started once, with arguments bandWidthHz, ezColGain, ezColBiasTee, freqBinQty, centerFreqAntHz, centerFreqRefHz, ezColUsbRelay, and ezColAntBtwnRef.
     #   It will loop and read the latest inputs from programStateQueue and ezColIntegQtyQueue.
     #   At the end of each loop it will output one tuple through sdrOutQueue.
     #   The tuple includes sdrGain, rmsSpectrum, and dataFlagsS.
@@ -1673,6 +1704,15 @@ def sdrTask(bandWidthHz, ezColGain, freqBinQty, centerFreqAntHz, centerFreqRefHz
     print('sdr.freq_correction =', sdr.freq_correction)
     print('sdr.gain =', sdr.gain)
     print('sdr.rs =', sdr.rs)
+
+    # Control RTL2832 Bias Tee
+    if ezColBiasTee > 0:
+        # set/unset BiasTee
+        if sdr.set_bias_tee(ezColBiasTee == 5) < 0:
+            print('Could not set Bias Tee mode')
+        else:
+            print('Bias Tee ON' if (ezColBiasTee == 5) else 'Bias Tee OFF')
+        sleep(0.2) # Sleep for x seconds
 
     # by operating system, initialize (reset) feedRef relay system, if any
     # -ezColUsbRelay    0           No relays driving a feed Dicke reference
@@ -1931,7 +1971,18 @@ def sdrTask(bandWidthHz, ezColGain, freqBinQty, centerFreqAntHz, centerFreqRefHz
         if not programStateQueue.empty():
             sdrProgramState = programStateQueue.get_nowait()
 
-        if sdrProgramState == 2: 
+        if sdrProgramState == 2:
+            # Control RTL2832 Bias Tee
+            if ezColBiasTee > 0:
+                # unset BiasTee
+                if sdr.set_bias_tee(False) < 0:
+                    print('Could not set Bias Tee mode')
+                else:
+                    print('Bias Tee OFF')
+                sleep(0.2) # Sleep for x seconds
+            # uninitialize the SDR
+            sdr.close()
+            # EXIT
             exit(0)
 
         else: 
