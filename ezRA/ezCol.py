@@ -334,7 +334,7 @@ def ezColArgumentsFile(ezDefaultsFileNameInput):
                 ezColFreqBinQtyBits = int(thisLineSplit[1])
 
             elif thisLine0Lower == '-ezColGain'.lower():
-                ezColGain = int(thisLineSplit[1])
+                ezColGain = float(thisLineSplit[1])
 
             elif thisLine0Lower == '-ezColBiasTee'.lower():
                 ezColBiasTee = int(thisLineSplit[1])
@@ -426,7 +426,7 @@ def ezColArgumentsCommandLine():
     global ezColBandWidth                   # float
 
     global ezColFreqBinQtyBits              # integer
-    global ezColGain                        # integer
+    global ezColGain                        # float
     global ezColBiasTee                     # integer
     global ezColAntBtwnRef                  # integer
 
@@ -514,7 +514,7 @@ def ezColArgumentsCommandLine():
 
             elif cmdLineArgLower == '-ezColGain'.lower():
                 cmdLineSplitIndex += 1      # point to first argument value
-                ezColGain = int(cmdLineSplit[cmdLineSplitIndex])
+                ezColGain = float(cmdLineSplit[cmdLineSplitIndex])
 
             elif cmdLineArgLower == '-ezColBiasTee'.lower():
                 cmdLineSplitIndex += 1      # point to first argument value
@@ -629,7 +629,7 @@ def ezColArguments():
     global ezColBandWidth                   # float
 
     global ezColFreqBinQtyBits              # integer
-    global ezColGain                        # integer
+    global ezColGain                        # float
     global ezColBiasTee                     # integer
     global ezColAntBtwnRef                  # integer
 
@@ -809,7 +809,7 @@ def main():
     global ezColBandWidth                   # float
 
     global ezColFreqBinQtyBits              # integer
-    global ezColGain                        # integer
+    global ezColGain                        # float
     global ezColBiasTee                     # integer
     global ezColAntBtwnRef                  # integer
 
@@ -1508,14 +1508,15 @@ def sdrTask(bandWidthHz, ezColGain, ezColBiasTee, freqBinQty, centerFreqAntHz, c
     sdr = RtlSdr()
     sdr.sample_rate = int(bandWidthHz)                          # in integer Hz
     sdr.center_freq = centerFreqAntHz                           # in integer Hz
-    sdr.gain = ezColGain        # "set" SDR gain
-    sdrGain = sdr.gain          # what the SDR actually set the gain to
+    sdr.set_gain(ezColGain)                                     # "set" SDR gain
+    sdrGain = sdr.get_gain()                                    # what the SDR actually set the gain to
 
     print('sdr.bandwidth =', sdr.bandwidth)
     print('sdr.center_freq =', sdr.center_freq)
     print('sdr.fc =', sdr.fc)
     print('sdr.freq_correction =', sdr.freq_correction)
-    print('sdr.gain =', sdr.gain)
+    print('sdr.valid_gains =', sdr.valid_gains_db)
+    print('sdr.gain =', sdrGain)
     print('sdr.rs =', sdr.rs)
 
     # Control RTL2832 Bias Tee
