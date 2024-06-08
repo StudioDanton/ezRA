@@ -1801,7 +1801,18 @@ def sdrTask(bandWidthHz, ezColGain, ezColBiasTee, freqBinQty, centerFreqAntHz, c
         if not programStateQueue.empty():
             sdrProgramState = programStateQueue.get_nowait()
 
-        if sdrProgramState == 2: 
+        if sdrProgramState == 2:
+            # Control RTL2832 Bias Tee
+            if ezColBiasTee > 0:
+                # unset BiasTee
+                if sdr.set_bias_tee(False) < 0:
+                    print('Could not set Bias Tee mode')
+                else:
+                    print('Bias Tee OFF')
+                sleep(0.2) # Sleep for x seconds
+            # uninitialize the SDR
+            sdr.close()
+            # EXIT
             sys.exit(0)
 
         elif sdrProgramState == 0: 
@@ -1880,18 +1891,6 @@ def sdrTask(bandWidthHz, ezColGain, ezColBiasTee, freqBinQty, centerFreqAntHz, c
             sdrOut = rmsSpectrum = (sdrGain, rmsSpectrum, dataFlagsS)
 
             sdrOutQueue.put(sdrOut)
-
-    # Control RTL2832 Bias Tee
-    if ezColBiasTee > 0:
-        # unset BiasTee
-        if sdr.set_bias_tee(False) < 0:
-            print('Could not set Bias Tee mode')
-        else:
-            print('Bias Tee OFF')
-        sleep(0.2) # Sleep for x seconds
-
-    # uninitialize the SDR
-    sdr.close()
 
 
 #run the main process
