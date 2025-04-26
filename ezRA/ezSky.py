@@ -331,6 +331,8 @@ def printUsage():
     print('          with XMin XMax YMin YMax minimum and maximum limits (RaDec or Galactic degrees),')
     print('          with data connected dot size of 5)')
     print()
+    print('     -ezTextFontSize   10             (Size of text font)')
+    print()
     print(r'    -ezDefaultsFile ..\bigDish.txt      (additional file of ezRA arguments)')
     print()
     print('    -eXXXXXXXXXXXXXXzIgonoreThisWholeOneWord')
@@ -390,6 +392,8 @@ def ezSkyArgumentsFile(ezDefaultsFileNameInput):
     # process arguments from file
 
     global ezRAObsName                      # string
+    global ezTextFontSize                   # integer
+
     global ezColorMap                       # string
 
     global ezSkyAddRAH                      # float
@@ -452,6 +456,9 @@ def ezSkyArgumentsFile(ezDefaultsFileNameInput):
 
             elif fileLineSplit0Lower == '-ezColorMap'.lower():
                 ezColorMap = fileLineSplit[1]
+
+            elif fileLineSplit0Lower == '-ezTextFontSize'.lower():
+                ezTextFontSize = int(fileLineSplit[1])
 
             # ezSky arguments:
             elif fileLineSplit0Lower == '-ezSkyAddRAH'.lower():
@@ -569,6 +576,8 @@ def ezSkyArgumentsCommandLine():
     global commandString                    # string
 
     global ezRAObsName                      # string
+    global ezTextFontSize                   # integer
+
     global ezColorMap                       # string
 
     global ezSkyAddRAH                      # float
@@ -655,6 +664,9 @@ def ezSkyArgumentsCommandLine():
 
             elif cmdLineArgLower == 'ezColorMap'.lower():
                 ezColorMap = cmdLineSplit[cmdLineSplitIndex]   # cmd line allows only one word
+
+            elif cmdLineArgLower == 'ezTextFontSize'.lower():
+                ezTextFontSize = int(cmdLineSplit[cmdLineSplitIndex])
 
             # ezSky arguments:
             elif cmdLineArgLower == 'ezSkyAddRAH'.lower():
@@ -779,6 +791,10 @@ def ezSkyArguments():
     global commandString                    # string
 
     global ezRAObsName                      # string
+    global ezTextFontSize                   # integer
+    global ezTitleFontSize                  # integer
+    global ezAxisFontSize                   # integer
+    global ezHBarFontSize                   # integer
 
     global ezSkyAddRAH                      # float
     global ezSkyAddDecDeg                   # float
@@ -818,6 +834,8 @@ def ezSkyArguments():
     # defaults
     #ezRAObsName = 'LebanonKS'
     ezRAObsName = ''                        # silly name
+    ezTextFontSize = 10
+
     ezColorMap = 'gnuplot'                  # default color map
 
     ezSkyAddRAH    = 0.
@@ -875,6 +893,13 @@ def ezSkyArguments():
         print()
         print()
         exit()
+
+    # Auto size plot
+    if ezTextFontSize < 6:
+      ezTextFontSize = 6
+    ezTitleFontSize = 2 + ezTextFontSize
+    ezAxisFontSize = ezTextFontSize - 2
+    ezHBarFontSize = ezTextFontSize - 4
     
     #ezSkyMaskFileLong = '.' + os.path.sep + ezSkyMaskFile
     # in same directory as this program
@@ -893,6 +918,8 @@ def ezSkyArguments():
     # print status
     print()
     print('   ezRAObsName =', ezRAObsName)
+    print('   ezTextFontSize =', ezTextFontSize)
+    print()
     print('   ezColorMap =', ezColorMap)
     print()
     print('   ezSkyAddRAH    =', ezSkyAddRAH)
@@ -1221,19 +1248,23 @@ def plotEzSky1dSamplesAnt(plotName, plotData1d, plotXLabel, plotYLimL, plotColor
     global xTickLabelsAnt                       # list          create?
     global xLabelSAnt                           # string        create?
 
+    global ezTextFontSize                       # integer
+    global ezTitleFontSize                      # integer
+    global ezAxisFontSize                       # integer
+
     plt.clf()
 
     if plotXLabel:
         # sorted data
         #plt.scatter(range(antLen), plotData1d, s=0.001, c=plotColorS)
         plt.scatter(range(antLen), plotData1d, s=1., c=plotColorS)
-        plt.xlabel(plotXLabel)
+        plt.xlabel(plotXLabel, fontsize=ezTextFontSize)
     else:
         # unsorted data
         plt.plot(plotData1d, plotColorS)
-        plt.xlabel(f'Sample Number (last={antLenM1:,})')
+        plt.xlabel(f'Sample Number (last={antLenM1:,})', fontsize=ezTextFontSize)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezSkyDispGrid)
 
     if not len(xTickLocsAnt):
@@ -1246,12 +1277,13 @@ def plotEzSky1dSamplesAnt(plotName, plotData1d, plotXLabel, plotYLimL, plotColor
             else:       # remove silly values
                 xTickLocsAnt = np.delete(xTickLocsAnt, i)
                 xTickLabelsAnt = np.delete(xTickLabelsAnt, i)
-    plt.xticks(xTickLocsAnt, xTickLabelsAnt, rotation=45, ha='right', rotation_mode='anchor')
+    plt.xticks(xTickLocsAnt, xTickLabelsAnt, rotation=45, ha='right', rotation_mode='anchor', fontsize=ezAxisFontSize)
     plt.xlim(0, antLenM1)
 
-    plt.ylabel(plotYLabel)
+    plt.ylabel(plotYLabel, fontsize=ezTextFontSize)
     if len(plotYLimL):
         plt.ylim(plotYLimL[0], plotYLimL[1])
+    plt.yticks(fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -1853,6 +1885,10 @@ def plotEzSky200RBVO():
     global ezSkyBackground1XMax     # integer
     global ezSkyBackground1YMax     # integer
 
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+
     plotCountdown -= 1
 
     # if plot not wanted, then return
@@ -1938,16 +1974,16 @@ def plotEzSky200RBVO():
     plt.scatter(raHalfDegScaled, decHalfDegScaled + radecPowerScaled, s=1, marker='.',
         c=ezbColumnColor[ezSkyInput])
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     ###plt.grid(ezSkyDispGrid)
 
     plt.xticks([i * imgaxesRatioX for i in range(720, -1, -60)],
-        ['0', '2', '4', '6', '8', '10', '12', '14', '16', '18', '20', '22', '24'])
+        ['0', '2', '4', '6', '8', '10', '12', '14', '16', '18', '20', '22', '24'], fontsize=ezAxisFontSize)
 
-    plt.ylabel(f'{ezSkyInputS[2:]} Vertical Offset in RaDec Coordinates')
+    plt.ylabel(f'{ezSkyInputS[2:]} Vertical Offset in RaDec Coordinates', fontsize=ezTextFontSize)
     plt.yticks([i * imgaxesRatioY for i in range(360, -1, -30)],
-        ['-90', '-75', '-60', '-45', '-30', '-15', '0', '15', '30', '45', '60', '75', '90'])
-    imgaxes.tick_params(axis='both', labelsize=6)
+        ['-90', '-75', '-60', '-45', '-30', '-15', '0', '15', '30', '45', '60', '75', '90'], fontsize=ezAxisFontSize)
+    imgaxes.tick_params(axis='both', labelsize=ezAxisFontSize)
 
     plt.subplots_adjust(left=0.4, right=0.5, bottom=0.4, top=0.5)
 
@@ -1977,6 +2013,10 @@ def plotEzSky201RBMax():
     global ezSkyBackground1         # string
     global ezSkyBackground1XMax     # integer
     global ezSkyBackground1YMax     # integer
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     plotCountdown -= 1
 
@@ -2203,16 +2243,16 @@ def plotEzSky201RBMax():
             s=100, marker='.', c='green')
 
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     ###plt.grid(ezSkyDispGrid)
 
     plt.xticks([i * imgaxesRatioX for i in range(720, -1, -60)],
-        ['0', '2', '4', '6', '8', '10', '12', '14', '16', '18', '20', '22', '24'])
+        ['0', '2', '4', '6', '8', '10', '12', '14', '16', '18', '20', '22', '24'], fontsize=ezAxisFontSize)
 
-    plt.ylabel(f'{ezSkyInputS[2:]} Local Maximum in RaDec Coordinates')
+    plt.ylabel(f'{ezSkyInputS[2:]} Local Maximum in RaDec Coordinates', fontsize=ezTextFontSize)
     plt.yticks([i * imgaxesRatioY for i in range(360, -1, -30)],
-        ['-90', '-75', '-60', '-45', '-30', '-15', '0', '15', '30', '45', '60', '75', '90'])
-    imgaxes.tick_params(axis='both', labelsize=6)
+        ['-90', '-75', '-60', '-45', '-30', '-15', '0', '15', '30', '45', '60', '75', '90'], fontsize=ezAxisFontSize)
+    imgaxes.tick_params(axis='both', labelsize=ezAxisFontSize)
 
     plt.subplots_adjust(left=0.4, right=0.5, bottom=0.4, top=0.5)
 
@@ -2242,6 +2282,11 @@ def plotEzSky300RB():
     global ezSkyBackground1YMax     # integer
 
     global ezColorMap               # string
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+    global ezHBarFontSize           # integer
 
     plotCountdown -= 1
 
@@ -2288,18 +2333,18 @@ def plotEzSky300RB():
         c=radecPower, cmap=plt.get_cmap(ezColorMap))
 
     cbar = plt.colorbar(pts, orientation='horizontal', shrink=0.3, pad=0.06)
-    cbar.ax.tick_params(labelsize=6)
+    cbar.ax.tick_params(labelsize=ezHBarFontSize)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     ###plt.grid(ezSkyDispGrid)
 
     plt.xticks([i * imgaxesRatioX for i in range(720, -1, -60)],
-        ['0', '2', '4', '6', '8', '10', '12', '14', '16', '18', '20', '22', '24'])
+        ['0', '2', '4', '6', '8', '10', '12', '14', '16', '18', '20', '22', '24'], fontsize=ezAxisFontSize)
 
-    plt.ylabel(f'{ezSkyInputS[2:]} Color in RaDec Coordinates')
+    plt.ylabel(f'{ezSkyInputS[2:]} Color in RaDec Coordinates', fontsize=ezTextFontSize)
     plt.yticks([i * imgaxesRatioY for i in range(360, -1, -30)],
-        ['-90', '-75', '-60', '-45', '-30', '-15', '0', '15', '30', '45', '60', '75', '90'])
-    imgaxes.tick_params(axis='both', labelsize=6)
+        ['-90', '-75', '-60', '-45', '-30', '-15', '0', '15', '30', '45', '60', '75', '90'], fontsize=ezAxisFontSize)
+    imgaxes.tick_params(axis='both', labelsize=ezHBarFontSize)
 
     plt.subplots_adjust(left=0.4, right=0.5, bottom=0.4, top=0.5)
 
@@ -2332,6 +2377,11 @@ def plotEzSky301RBT():
     global ezColorMap               # string
 
     global ezSkyMaskValue           # float
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+    global ezHBarFontSize           # integer
 
     plotCountdown -= 1
 
@@ -2449,18 +2499,18 @@ def plotEzSky301RBT():
     radecPowerAll       = []
 
     cbar = plt.colorbar(pts, orientation='horizontal', shrink=0.3, pad=0.06)
-    cbar.ax.tick_params(labelsize=6)
+    cbar.ax.tick_params(labelsize=ezHBarFontSize)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     ###plt.grid(ezSkyDispGrid)
 
     plt.xticks([i * imgaxesRatioX for i in range(720, -1, -60)],
-        ['0', '2', '4', '6', '8', '10', '12', '14', '16', '18', '20', '22', '24'])
+        ['0', '2', '4', '6', '8', '10', '12', '14', '16', '18', '20', '22', '24'], fontsize=ezAxisFontSize)
 
-    plt.ylabel(f'{ezSkyInputS[2:]} Color Tall in RaDec Coordinates')
+    plt.ylabel(f'{ezSkyInputS[2:]} Color Tall in RaDec Coordinates', fontsize=ezTextFontSize)
     plt.yticks([i * imgaxesRatioY for i in range(360, -1, -30)],
-        ['-90', '-75', '-60', '-45', '-30', '-15', '0', '15', '30', '45', '60', '75', '90'])
-    imgaxes.tick_params(axis='both', labelsize=6)
+        ['-90', '-75', '-60', '-45', '-30', '-15', '0', '15', '30', '45', '60', '75', '90'], fontsize=ezAxisFontSize)
+    imgaxes.tick_params(axis='both', labelsize=ezHBarFontSize)
 
     plt.subplots_adjust(left=0.4, right=0.5, bottom=0.4, top=0.5)
 
@@ -2493,6 +2543,11 @@ def plotEzSky309RBTC():
     global ezColorMap               # string
 	
     global ezSkyMaskValue           # float
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+    global ezHBarFontSize           # integer
 
     plotCountdown -= 1
 
@@ -2583,18 +2638,18 @@ def plotEzSky309RBTC():
     radecCountAll       = []
 
     cbar = plt.colorbar(pts, orientation='horizontal', shrink=0.3, pad=0.06)
-    cbar.ax.tick_params(labelsize=6)
+    cbar.ax.tick_params(labelsize=ezHBarFontSize)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     ###plt.grid(ezSkyDispGrid)
 
     plt.xticks([i * imgaxesRatioX for i in range(720, -1, -60)],
-        ['0', '2', '4', '6', '8', '10', '12', '14', '16', '18', '20', '22', '24'])
+        ['0', '2', '4', '6', '8', '10', '12', '14', '16', '18', '20', '22', '24'], fontsize=ezAxisFontSize)
 
-    plt.ylabel('Count Color Tall in RaDec Coordinates')
+    plt.ylabel('Count Color Tall in RaDec Coordinates', fontsize=ezTextFontSize)
     plt.yticks([i * imgaxesRatioY for i in range(360, -1, -30)],
-        ['-90', '-75', '-60', '-45', '-30', '-15', '0', '15', '30', '45', '60', '75', '90'])
-    imgaxes.tick_params(axis='both', labelsize=6)
+        ['-90', '-75', '-60', '-45', '-30', '-15', '0', '15', '30', '45', '60', '75', '90'], fontsize=ezAxisFontSize)
+    imgaxes.tick_params(axis='both', labelsize=ezHBarFontSize)
 
     plt.subplots_adjust(left=0.4, right=0.5, bottom=0.4, top=0.5)
 
@@ -2623,6 +2678,10 @@ def plotEzSky400RI():
     global ezSkyMaskValue           # float
 
     global ezColorMap               # string
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     plotCountdown -= 1
 
@@ -2742,18 +2801,18 @@ def plotEzSky400RI():
     ax.scatter(raHalfDeg, decHalfDeg-180., marker='.', s=0.5,
         color='black', linewidths=0)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     ###plt.grid(ezSkyDispGrid)
 
     plt.xlim(600, 480)      # inverts x axis
     plt.xticks([ 0.,    60., 120., 180., 240., 300., 360., 420., 480., 540., 600., 660., 720.],
-               [' 0  ', '2', '4',  '6',  '8',  '10', '12', '14', '16', '18', '20', '22', '24'])
+               [' 0  ', '2', '4',  '6',  '8',  '10', '12', '14', '16', '18', '20', '22', '24'], fontsize=ezAxisFontSize)
 
-    plt.ylabel(f'{ezSkyInputS[2:]} Interpolated in RaDec Coordinates')
+    plt.ylabel(f'{ezSkyInputS[2:]} Interpolated in RaDec Coordinates', fontsize=ezTextFontSize)
     plt.ylim(-180, 180)
     plt.yticks( \
         [-180., -150., -120., -90.,  -60.,  -30.,  0.,  30.,  60.,  90.,  120., 150., 180.],
-        ['-90', '-75', '-60', '-45', '-30', '-15', '0', '15', '30', '45', '60', '75', '90'])
+        ['-90', '-75', '-60', '-45', '-30', '-15', '0', '15', '30', '45', '60', '75', '90'], fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -2915,6 +2974,10 @@ def plotEzSky405RIL():
     global fileNameLast             # string
     global titleS                   # string
 
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+
     plotCountdown -= 1
 
     # if plot not wanted, then return
@@ -3021,9 +3084,9 @@ def plotEzSky405RIL():
             ax.plot(radecRaBoxCrumbs, radecDecBoxCrumbs, marker='.', markersize=-ezSkyXYLimL[6],
                 color='black')
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
 
-    plt.xlabel('Right Ascension (Degrees)\nRight Ascension (Hours)')
+    plt.xlabel('Right Ascension (Degrees)\nRight Ascension (Hours)', fontsize=ezTextFontSize)
     plt.xlim(raDegMinMaxL[1], raDegMinMaxL[0])
     radecRaBoxMid = (radecRaBoxMin + radecRaBoxMax) / 2.
     radecRaDegMid = (raDegMinMaxL[0] + raDegMinMaxL[1]) / 2.
@@ -3032,15 +3095,15 @@ def plotEzSky405RIL():
     plt.xticks([radecRaBoxMin, radecRaBoxMid, radecRaBoxMax],
                 [f'{raDegMinMaxL[0]:.4f}\n{raDegMinMaxL[0]/15.:.4f}',
                     f'{radecRaDegMid:.4f}\n{radecRaDegMid/15.:.4f}',
-                    f'{raDegMinMaxL[1]:.4f}\n{raDegMinMaxL[1]/15.:.4f}'])
+                    f'{raDegMinMaxL[1]:.4f}\n{raDegMinMaxL[1]/15.:.4f}'], fontsize=ezAxisFontSize)
 
-    plt.ylabel(f'{ezSkyInputS[2:]} Interpolated in RaDec Coordinates\nDeclination (Degrees)')
+    plt.ylabel(f'{ezSkyInputS[2:]} Interpolated in RaDec Coordinates\nDeclination (Degrees)', fontsize=ezTextFontSize)
     plt.ylim(decDegMinMaxL[0], decDegMinMaxL[1])
     radecDecBoxMid = (radecDecBoxMin + radecDecBoxMax) / 2.
     radecDecDegMid = (decDegMinMaxL[0] + decDegMinMaxL[1]) / 2.
     print('                         radecDecDegMid =', radecDecDegMid)
     plt.yticks([radecDecBoxMin, radecDecBoxMid, radecDecBoxMax],
-               [f'{decDegMinMaxL[0]:.4f}', f'{radecDecDegMid:.4f}', f'{decDegMinMaxL[1]:.4f}'])
+               [f'{decDegMinMaxL[0]:.4f}', f'{radecDecDegMid:.4f}', f'{decDegMinMaxL[1]:.4f}'], fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -3072,6 +3135,10 @@ def plotEzSky406RILC():
     global titleS                   # string
 
     global ezColorMap               # string
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     plotCountdown -= 1
 
@@ -3299,9 +3366,9 @@ def plotEzSky406RILC():
             ax.plot(radecRaBoxCrumbs, radecDecBoxCrumbs, marker='.', markersize=-ezSkyXYLimL[6],
                 color='black')
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
 
-    plt.xlabel('Right Ascension (Degrees)\nRight Ascension (Hours)')
+    plt.xlabel('Right Ascension (Degrees)\nRight Ascension (Hours)', fontsize=ezTextFontSize)
     plt.xlim(raDegMinMaxL[1], raDegMinMaxL[0])
     radecRaBoxMid = (radecRaBoxMin + radecRaBoxMax) / 2.
     radecRaDegMid = (raDegMinMaxL[0] + raDegMinMaxL[1]) / 2.
@@ -3310,15 +3377,15 @@ def plotEzSky406RILC():
     plt.xticks([radecRaBoxMin, radecRaBoxMid, radecRaBoxMax],
                 [f'{raDegMinMaxL[0]:.4f}\n{raDegMinMaxL[0]/15.:.4f}',
                     f'{radecRaDegMid:.4f}\n{radecRaDegMid/15.:.4f}',
-                    f'{raDegMinMaxL[1]:.4f}\n{raDegMinMaxL[1]/15.:.4f}'])
+                    f'{raDegMinMaxL[1]:.4f}\n{raDegMinMaxL[1]/15.:.4f}'], fontsize=ezAxisFontSize)
 
-    plt.ylabel(f'{ezSkyInputS[2:]} Interpolated in RaDec Coordinates\nDeclination (Degrees)')
+    plt.ylabel(f'{ezSkyInputS[2:]} Interpolated in RaDec Coordinates\nDeclination (Degrees)', fontsize=ezTextFontSize)
     plt.ylim(decDegMinMaxL[0], decDegMinMaxL[1])
     radecDecBoxMid = (radecDecBoxMin + radecDecBoxMax) / 2.
     radecDecDegMid = (decDegMinMaxL[0] + decDegMinMaxL[1]) / 2.
     print('                         radecDecDegMid =', radecDecDegMid)
     plt.yticks([radecDecBoxMin, radecDecBoxMid, radecDecBoxMax],
-               [f'{decDegMinMaxL[0]:.4f}', f'{radecDecDegMid:.4f}', f'{decDegMinMaxL[1]:.4f}'])
+               [f'{decDegMinMaxL[0]:.4f}', f'{radecDecDegMid:.4f}', f'{decDegMinMaxL[1]:.4f}'], fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -3345,6 +3412,10 @@ def plotEzSky450RIR():
     global ezSkyMaskValue           # float
 
     global ezColorMap               # string
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     plotCountdown -= 1
 
@@ -3791,19 +3862,21 @@ def plotEzSky450RIR():
 
     if 0:
         fig.text(180., 300.95, 'Latitude', \
-            horizontalalignment='left', verticalalignment='top', fontsize=10)
+            horizontalalignment='left', verticalalignment='top', fontsize=ezTextFontSize)
 
     ax.set_xticks([])   # disable
     ax.set_yticks([])   # disable
 
     plt.axis('equal')      # x and y scales the same
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
 
     plt.xlim(800, -20)        # inverts x axis, with left and right margins
+    plt.xticks(fontsize=ezAxisFontSize)
 
-    plt.ylabel(f'{ezSkyInputS[2:]} Interpolated Like Grote Reber 1944')
+    plt.ylabel(f'{ezSkyInputS[2:]} Interpolated Like Grote Reber 1944', fontsize=ezTextFontSize)
     plt.ylim(-180, 180)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -4165,6 +4238,10 @@ def plotEzSky500GMI():
 
     global ezColorMap                       # string
 
+    global ezTextFontSize                   # integer
+    global ezTitleFontSize                  # integer
+    global ezAxisFontSize                   # integer
+
     plotCountdown -= 1
 
     # if plot not wanted, then return
@@ -4281,19 +4358,19 @@ def plotEzSky500GMI():
     # optional thin black lines of true data
     ax.scatter(galacticGLonHalfDeg, galacticGLatHalfDeg, marker='.', s=0.5, color='black', linewidths=0)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     ###plt.grid(ezSkyDispGrid)
 
     # 0 through 720 represents -180 through +180 degrees, in half-degrees
     plt.xlim(720, 0)        # in half-degrees, inverted x axis
     plt.xticks([ 720.,  660.,  600.,  540., 480., 420., 360., 300.,  240.,  180.,  120.,   60.,    0.],
-               [ '180', '150', '120', '90', '60', '30', '0',  '-30', '-60', '-90', '-120', '-150', '-180'])
+               [ '180', '150', '120', '90', '60', '30', '0',  '-30', '-60', '-90', '-120', '-150', '-180'], fontsize=ezAxisFontSize)
 
-    plt.ylabel(f'{ezSkyInputS[2:]} Interpolated in Mercator Galactic Coordinates')
+    plt.ylabel(f'{ezSkyInputS[2:]} Interpolated in Mercator Galactic Coordinates', fontsize=ezTextFontSize)
     # 0 through 360 represents -90 through +90 degrees, in half-degrees
     plt.ylim(0, 360)        # in half-degrees
     plt.yticks([0.,    30.,   60.,   90.,   120.,  150.,  180., 210., 240., 270., 300., 330., 360.],
-               ['-90', '-75', '-60', '-45', '-30', '-15', '0',  '15', '30', '45', '60', '75', '90'])
+               ['-90', '-75', '-60', '-45', '-30', '-15', '0',  '15', '30', '45', '60', '75', '90'], fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -4453,13 +4530,17 @@ def plotEzSky505GMIL():
     global ezSkyInputS              # string
     global ezSkyXYLimL              # list of floats
 
-    global ezSkyPlotRangeL                  # integer list
-    global plotCountdown                    # integer
-    global fileNameLast                     # string
-    global titleS                           # string
-    #global ezSkyDispGrid                   # integer
+    global ezSkyPlotRangeL          # integer list
+    global plotCountdown            # integer
+    global fileNameLast             # string
+    global titleS                   # string
+    #global ezSkyDispGrid           # integer
 
     global ezColorMap               # string
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     plotCountdown -= 1
 
@@ -4571,12 +4652,12 @@ def plotEzSky505GMIL():
             ax.plot(gLonBoxCrumbs, gLatBoxCrumbs, marker='.', markersize=-ezSkyXYLimL[6],
                 color='black')
 
-    plt.title(titleS)
+    ###plt.title(titleS, fontsize=ezTitleFontSize)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     ###plt.grid(ezSkyDispGrid)
 
-    plt.xlabel('Galactic Longitude (Degrees)')
+    plt.xlabel('Galactic Longitude (Degrees)', fontsize=ezTextFontSize)
     plt.xlim(gLonBoxMax, gLonBoxMin)
     gLonBoxMid = (gLonBoxMin + gLonBoxMax) / 2.
     gLonDegMid = (gLonDegMinMaxL[0] + gLonDegMinMaxL[1]) / 2.
@@ -4586,10 +4667,10 @@ def plotEzSky505GMIL():
     plt.xticks([gLonBoxMin, gLonBoxMid, gLonBoxMax],
         [f'{gLonDegMinMaxL[0]:.4f}',
             f'{gLonDegMid:.4f}',
-            f'{gLonDegMinMaxL[1]:.4f}'])
+            f'{gLonDegMinMaxL[1]:.4f}'], fontsize=ezAxisFontSize)
 
     plt.ylabel(f'{ezSkyInputS[2:]} Interpolated in Galactic Coordinates' \
-        + '\nGalactic Latitude (Degrees)')
+        + '\nGalactic Latitude (Degrees)', fontsize=ezTextFontSize)
     plt.ylim(gLatBoxMin, gLatBoxMax)
     gLatBoxMid = (gLatBoxMin + gLatBoxMax) / 2.
     gLatDegMid = (gLatDegMinMaxL[0] + gLatDegMinMaxL[1]) / 2.
@@ -4598,7 +4679,7 @@ def plotEzSky505GMIL():
     plt.yticks([gLatBoxMin, gLatBoxMid, gLatBoxMax],
         [f'{gLatDegMinMaxL[0]:.4f}',
             f'{gLatDegMid:.4f}',
-            f'{gLatDegMinMaxL[1]:.4f}'])
+            f'{gLatDegMinMaxL[1]:.4f}'], fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -4762,19 +4843,19 @@ def plotEzSky510GSI():
     ax.scatter(galacticGLonHalfDegSinusoidal, galacticGLatHalfDeg, marker='.', s=0.5,
         color='black', linewidths=0)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     ###plt.grid(ezSkyDispGrid)
 
     # 0 through 720 represents -180 through +180 degrees, in half-degrees
     plt.xlim(725, -5)        # in half-degrees, inverted x axis
     plt.xticks([ 720.,  660.,  600.,  540., 480., 420., 360., 300.,  240.,  180.,  120.,   60.,    0.],
-               [ '180', '150', '120', '90', '60', '30', '0',  '-30', '-60', '-90', '-120', '-150', '-180'])
+               [ '180', '150', '120', '90', '60', '30', '0',  '-30', '-60', '-90', '-120', '-150', '-180'], fontsize=ezAxisFontSize)
 
-    plt.ylabel(f'{ezSkyInputS[2:]} Interpolated in Sinusoidal Galactic Coordinates')
+    plt.ylabel(f'{ezSkyInputS[2:]} Interpolated in Sinusoidal Galactic Coordinates', fontsize=ezTextFontSize)
     # 0 through 360 represents -90 through +90 degrees, in half-degrees
     plt.ylim(-5, 365)        # in half-degrees
     plt.yticks([0.,    30.,   60.,   90.,   120.,  150.,  180., 210., 240., 270., 300., 330., 360.],
-               ['-90', '-75', '-60', '-45', '-30', '-15', '0',  '15', '30', '45', '60', '75', '90'])
+               ['-90', '-75', '-60', '-45', '-30', '-15', '0',  '15', '30', '45', '60', '75', '90'], fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -4818,6 +4899,10 @@ def plotEzSkyMollweide(plotNumber):
     #global ezSkyDispGrid                   # integer
 
     global ezColorMap                       # string
+
+    global ezTextFontSize                   # integer
+    global ezTitleFontSize                  # integer
+    global ezAxisFontSize                   # integer
 
     plotCountdown -= 1
 
@@ -5113,20 +5198,20 @@ def plotEzSkyMollweide(plotNumber):
 
         ylabelText = f'{ezSkyInputS[2:]} Galactic Crossings\nezSkyGalCrossingGLonNear = {ezSkyGalCrossingGLonNear}'
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     ###plt.grid(ezSkyDispGrid)
 
     # 0 through 720 represents -180 through +180 degrees, in half-degrees
     plt.xlim(725, -5)        # in half-degrees, inverted x axis
     plt.xticks([ 720.,  660.,  600.,  540., 480., 420., 360., 300.,  240.,  180.,  120.,   60.,    0.],
-               [ '180', '150', '120', '90', '60', '30', '0',  '-30', '-60', '-90', '-120', '-150', '-180'])
+               [ '180', '150', '120', '90', '60', '30', '0',  '-30', '-60', '-90', '-120', '-150', '-180'], fontsize=ezAxisFontSize)
 
     #plt.ylabel(f'{ezSkyInputS[2:]} Interpolated in Mollweide Galactic Coordinates')
-    plt.ylabel(ylabelText)
+    plt.ylabel(ylabelText, fontsize=ezTextFontSize)
     # 0 through 360 represents -90 through +90 degrees, in half-degrees
     plt.ylim(-5, 365)        # in half-degrees
     plt.yticks([0.,    30.,   60.,   90.,   120.,  150.,  180., 210., 240., 270., 300., 330., 360.],
-               ['-90', '-75', '-60', '-45', '-30', '-15', '0',  '15', '30', '45', '60', '75', '90'])
+               ['-90', '-75', '-60', '-45', '-30', '-15', '0',  '15', '30', '45', '60', '75', '90'], fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -5149,6 +5234,11 @@ def plotEzSky600azEl():
     global fileNameLast             # string
     global titleS                   # string
     #global ezSkyDispGrid           # integer
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+    global ezHBarFontSize           # integer
 
     plotCountdown -= 1
 
@@ -5173,7 +5263,7 @@ def plotEzSky600azEl():
         s=10, marker='.', c=power, cmap=plt.get_cmap(ezColorMap))
 
     cbar = plt.colorbar(pts, orientation='horizontal', shrink=0.3, pad=0.06)
-    cbar.ax.tick_params(labelsize=6)
+    cbar.ax.tick_params(labelsize=ezHBarFontSize)
 
     # plot wide grid lines
     plt.axhline(y=0., linewidth=0.5, color='black')
@@ -5181,7 +5271,7 @@ def plotEzSky600azEl():
     plt.axvline(x=180., linewidth=0.5, color='black')
     plt.axvline(x=270., linewidth=0.5, color='black')
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     ###plt.grid(ezSkyDispGrid)
 
     plt.xlim(0, 360)
@@ -5190,16 +5280,16 @@ def plotEzSky600azEl():
     #xticks = [i for i in range(0, 361, 30)]
     #xticksS = [str(i) for i in xticks]
     #plt.xticks(xticks)
-    plt.xticks(range(0, 361, 30))
+    plt.xticks(range(0, 361, 30), fontsize=ezAxisFontSize)
 
-    plt.ylabel(f'{ezSkyInputS[2:]} Color in AzEl Coordinates')
+    plt.ylabel(f'{ezSkyInputS[2:]} Color in AzEl Coordinates', fontsize=ezTextFontSize)
     plt.ylim(-90, 90)
     #plt.yticks([i * imgaxesRatioY for i in range(360, -1, -30)],
     #    ['-90', '-75', '-60', '-45', '-30', '-15', '0', '15', '30', '45', '60', '75', '90'])
-    #imgaxes.tick_params(axis='both', labelsize=6)
+    #imgaxes.tick_params(axis='both', labelsize=ezAxisFontSize)
     #plt.yticks(range(-90, 91, 30))     # but uses ugly large dash for minus sign !
     plt.yticks(range(-90, 91, 30), 
-        ['-90', '-60', '-30', '0', '30', '60', '90'])
+        ['-90', '-60', '-30', '0', '30', '60', '90'], fontsize=ezAxisFontSize)
 
     #plt.subplots_adjust(left=0.4, right=0.5, bottom=0.4, top=0.5)
 

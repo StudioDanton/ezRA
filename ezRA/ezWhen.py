@@ -137,6 +137,8 @@ def printUsage():
     print()
     print('    -ezWhenPlotRangeL    0  100    (save only this range of ezWhen plots to file, to save time)')
     print()
+    print('     -ezTextFontSize    10         (Size of text font)')
+    print()
     print('    -ezDefaultsFile ../bigDish8.txt     (additional file of ezRA arguments)')
     print()
     print('    -eXXXXXXXXXXXXXXzIgonoreThisWholeOneWord')
@@ -200,6 +202,8 @@ def ezWhenArgumentsFile(ezDefaultsFileNameInput):
     global ezColElDeg                       # float
     global coordType                        # integer
 
+    global ezTextFontSize                   # integer
+
     print()
     print('   ezWhenArgumentsFile(' + ezDefaultsFileNameInput + ') ===============')
 
@@ -256,6 +260,9 @@ def ezWhenArgumentsFile(ezDefaultsFileNameInput):
                 #skyObjectL.append(thisLine[1:])
                 skyObjectL += thisLine[1:]
 
+            elif thisLine0Lower == '-ezTextFontSize'.lower():
+                ezTextFontSize = int(thisLine[1])
+
             elif thisLine0Lower[:5] == '-ezWhen'.lower():
                 print()
                 print()
@@ -298,6 +305,8 @@ def ezWhenArgumentsCommandLine():
     global ezColAzDeg                       # float
     global ezColElDeg                       # float
     global coordType                        # integer
+
+    global ezTextFontSize                   # integer
 
     print()
     print('   ezWhenArgumentsCommandLine ===============')
@@ -369,6 +378,10 @@ def ezWhenArgumentsCommandLine():
                 cmdLineSplitIndex += 1
                 ezWhenPlotRangeL[1] = int(cmdLineSplit[cmdLineSplitIndex])
 
+            elif cmdLineArgLower == '-ezTextFontSize'.lower():
+                cmdLineSplitIndex += 1      # point to first argument value
+                ezTextFontSize = int(cmdLineSplit[cmdLineSplitIndex])
+
             elif cmdLineArgLower == '-ezDefaultsFile'.lower():
                 ezWhenArgumentsFile(cmdLineSplit[cmdLineSplitIndex])
 
@@ -435,6 +448,11 @@ def ezWhenArguments():
     global coord0                           # float
     global coord1                           # float
 
+
+    global ezTextFontSize                   # integer
+    global ezTitleFontSize                  # integer
+    global ezAxisFontSize                   # integer
+
     # defaults
     ezRAObsLat  = -999.                 # silly number
     ezRAObsLon  = -999.                 # silly number
@@ -445,6 +463,8 @@ def ezWhenArguments():
     ezColAzDeg   = 180.0                # Azimuth            pointing of antenna (degrees)
     ezColElDeg   =  45.0                # Elevation          pointing of antenna (degrees)
     coordType    = 0                    # AzEl
+
+    ezTextFontSize = 10
 
     ezWhenPlotRangeL = [0, 9999]        # save this range of plots to file
 
@@ -471,6 +491,12 @@ def ezWhenArguments():
 
     # process arguments from command line
     ezWhenArgumentsCommandLine()
+
+    # Auto size plot
+    if ezTextFontSize < 6:
+      ezTextFontSize = 6
+    ezTitleFontSize = 2 + ezTextFontSize
+    ezAxisFontSize = ezTextFontSize - 2
 
     # sanity tests
 
@@ -854,6 +880,10 @@ def ezWhen030azEl():
     global titleS                           # string
     global ezWhenPlotRangeL                 # integer list
 
+    global ezTextFontSize                   # integer
+    global ezTitleFontSize                  # integer
+    global ezAxisFontSize                   # integer
+
     # if plot not wanted, then return
     if ezWhenPlotRangeL[1] < 30 or 30 < ezWhenPlotRangeL[0]:
         return(1)
@@ -869,25 +899,26 @@ def ezWhen030azEl():
     for i in range(len(azDegL)):
         plt.scatter(azDegL[i], elDegL[i], marker=markerSL[i], s=100., c=colorSL[i])
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
 
-    plt.xlabel('Azimuth (Degrees)\nMarkers = Location of Legend Sky Object at UTC Hours')
+    plt.xlabel('Azimuth (Degrees)\nMarkers = Location of Legend Sky Object at UTC Hours', fontsize=ezTextFontSize)
     plt.xlim(0., 360.)
     plt.xticks( \
         [0.,          30.,  60.,  90.,        120.,  150.,  180.,         210.,  240.,  270.,        300.,  330.,  360.],
-        ['0\nNorth', '30', '60', '90\nEast', '120', '150', '180\nFacing South', '210', '240', '270\nWest', '300', '330', '360\nNorth'])
+        ['0\nNorth', '30', '60', '90\nEast', '120', '150', '180\nFacing South', '210', '240', '270\nWest', '300', '330', '360\nNorth'], fontsize=ezAxisFontSize)
 
-    plt.ylabel('Elevation Above Horizon (Degrees)')
+    plt.ylabel('Elevation Above Horizon (Degrees)', fontsize=ezTextFontSize)
     plt.ylim(0., 90.)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     ezWhenDispGrid = 1
     plt.grid(ezWhenDispGrid)
 
     # legend for each skyObject
-    ax.text(370., 85., 'Legend', color='black')
-    ax.text(370., 80., '======', color='black')
+    ax.text(370., 85., 'Legend', color='black', fontsize=ezTextFontSize)
+    ax.text(370., 80., '======', color='black', fontsize=ezTextFontSize)
     for i in range(len(legendSL)):
-        ax.text(370., 75.-i*5., legendSL[i], color=colorSL[i*hourQty])
+        ax.text(370., 75.-i*5., legendSL[i], color=colorSL[i*hourQty], fontsize=ezTextFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -908,6 +939,10 @@ def ezWhen050raDec():
     global titleS                           # string
     global ezWhenPlotRangeL                 # integer list
 
+    global ezTextFontSize                   # integer
+    global ezTitleFontSize                  # integer
+    global ezAxisFontSize                   # integer
+
     # if plot not wanted, then return
     if ezWhenPlotRangeL[1] < 50 or 50 < ezWhenPlotRangeL[0]:
         return(1)
@@ -923,25 +958,31 @@ def ezWhen050raDec():
     for i in range(len(azDegL)):
         plt.scatter(raHL[i], decDegL[i], marker=markerSL[i], s=100., c=colorSL[i])
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
 
-    plt.xlabel('Right Ascension (Hours)\nMarkers = Location of Legend Sky Object at UTC Hours')
+    plt.xlabel('Right Ascension (Hours)\nMarkers = Location of Legend Sky Object at UTC Hours', fontsize=ezTextFontSize)
     plt.xlim(24., 0.)
+
     plt.xticks( \
         [24.,   22.,  20.,  18.,  16.,  14.,  12.,  10.,  8.,  6.,  4.,  2.,  0.],
-        ['24', '22', '20', '18', '16', '14', '12', '10', '8', '6', '4', '2', '0'])
+        ['24', '22', '20', '18', '16', '14', '12', '10', '8', '6', '4', '2', '0'], fontsize=ezAxisFontSize)
 
-    plt.ylabel('Declination (Degrees)')
+    plt.ylabel('Declination (Degrees)', fontsize=ezTextFontSize)
     plt.ylim(-90., 90.)
 
-    ezWhenDispGrid = 1
-    plt.grid(ezWhenDispGrid)
+    plt.yticks( \
+        [-90., -75., -60., -45., -30., -15., 0., 15., 30., 45., 60., 75., 90.],
+        ['-90', '-75', '-60', '-45', '-30', '-15', '0', '15', '30', '45', '60', '75', '90'], fontsize=ezAxisFontSize)
+    #plt.yticks(fontsize=ezAxisFontSize)
+
 
     # legend for each skyObject
-    ax.text(-0.6, 80., 'Legend', color='black')
-    ax.text(-0.6, 70., '======', color='black')
+    ax.text(-0.6, 80., 'Legend', color='black', fontsize=ezTextFontSize)
+    ax.text(-0.6, 70., '======', color='black', fontsize=ezTextFontSize)
     for i in range(len(legendSL)):
-        ax.text(-0.6, 60.-i*10., legendSL[i], color=colorSL[i*hourQty])
+        ax.text(-0.6, 60.-i*10., legendSL[i], color=colorSL[i*hourQty], fontsize=ezTextFontSize)
+
+    #plt.subplots_adjust(left=0.4, right=0.5, bottom=0.4, top=0.5)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -962,6 +1003,10 @@ def ezWhen080gal():
     global titleS                           # string
     global ezWhenPlotRangeL                 # integer list
 
+    global ezTextFontSize                   # integer
+    global ezTitleFontSize                  # integer
+    global ezAxisFontSize                   # integer
+
     # if plot not wanted, then return
     if ezWhenPlotRangeL[1] < 80 or 80 < ezWhenPlotRangeL[0]:
         return(1)
@@ -977,25 +1022,26 @@ def ezWhen080gal():
     for i in range(len(azDegL)):
         plt.scatter(gLonDegL[i], gLatDegL[i], marker=markerSL[i], s=100., c=colorSL[i])
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
 
-    plt.xlabel('Galactic Longitude (Degrees)\nMarkers = Location of Legend Sky Object at UTC Hours')
+    plt.xlabel('Galactic Longitude (Degrees)\nMarkers = Location of Legend Sky Object at UTC Hours', fontsize=ezTextFontSize)
     plt.xlim(180., -180.)
     plt.xticks( \
         [180.,   150.,  120.,  90.,  60.,  30.,  0.,  -30.,  -60.,  -90.,  -120.,  -150.,  -180.],
-        ['180', '150', '120', '90', '60', '30', '0', '-30', '-60', '-90', '-120', '-150', '-180'])
+        ['180', '150', '120', '90', '60', '30', '0', '-30', '-60', '-90', '-120', '-150', '-180'], fontsize=ezAxisFontSize)
 
-    plt.ylabel('Galactic Latitude (Degrees)')
+    plt.ylabel('Galactic Latitude (Degrees)', fontsize=ezTextFontSize)
     plt.ylim(-90., 90.)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     ezWhenDispGrid = 1
     plt.grid(ezWhenDispGrid)
 
     # legend for each skyObject
-    ax.text(-189., 80., 'Legend', color='black')
-    ax.text(-189., 70., '======', color='black')
+    ax.text(-189., 80., 'Legend', color='black', fontsize=ezTextFontSize)
+    ax.text(-189., 70., '======', color='black', fontsize=ezTextFontSize)
     for i in range(len(legendSL)):
-        ax.text(-189., 60.-i*10., legendSL[i], color=colorSL[i*hourQty])
+        ax.text(-189., 60.-i*10., legendSL[i], color=colorSL[i*hourQty], fontsize=ezTextFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -1016,6 +1062,10 @@ def ezWhen110azElS():
     global titleS                           # string
     global ezWhenPlotRangeL                 # integer list
 
+    global ezTextFontSize                   # integer
+    global ezTitleFontSize                  # integer
+    global ezAxisFontSize                   # integer
+
     # if plot not wanted, then return
     if ezWhenPlotRangeL[1] < 110 or 110 < ezWhenPlotRangeL[0]:
         return(1)
@@ -1035,25 +1085,26 @@ def ezWhen110azElS():
         if 90. <= azDegThis and azDegThis <= 270. and 0. <= elDegThis and elDegThis <= 90.:
             plt.scatter(azDegThis, elDegThis, marker=markerSL[i], s=100., c=colorSL[i])
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
 
     plt.xlim(90., 270.)
     plt.xticks( \
         [90.,         120.,  150.,  180.,         210.,  240.,  270.],
-        ['90\nEast', '120', '150', '180\nFacing South', '210', '240', '270\nWest'])
-    plt.xlabel('Azimuth (Degrees)\nMarkers = Location of Legend Sky Object at UTC Hours')
+        ['90\nEast', '120', '150', '180\nFacing South', '210', '240', '270\nWest'], fontsize=ezAxisFontSize)
+    plt.xlabel('Azimuth (Degrees)\nMarkers = Location of Legend Sky Object at UTC Hours', fontsize=ezTextFontSize)
 
-    plt.ylabel('Elevation Above Horizon (Degrees)')
+    plt.ylabel('Elevation Above Horizon (Degrees)', fontsize=ezTextFontSize)
     plt.ylim(0., 90.)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     ezWhenDispGrid = 1
     plt.grid(ezWhenDispGrid)
 
     # legend for each skyObject
-    ax.text(275., 85., 'Legend', color='black')
-    ax.text(275., 80., '======', color='black')
+    ax.text(275., 85., 'Legend', color='black', fontsize=ezTextFontSize)
+    ax.text(275., 80., '======', color='black', fontsize=ezTextFontSize)
     for i in range(len(legendSL)):
-        ax.text(275., 75.-i*5., legendSL[i], color=colorSL[i*hourQty])
+        ax.text(275., 75.-i*5., legendSL[i], color=colorSL[i*hourQty], fontsize=ezTextFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -1073,6 +1124,10 @@ def ezWhen120azElN():
     global hourQty                          # integer
     global titleS                           # string
     global ezWhenPlotRangeL                 # integer list
+
+    global ezTextFontSize                   # integer
+    global ezTitleFontSize                  # integer
+    global ezAxisFontSize                   # integer
 
     # if plot not wanted, then return
     if ezWhenPlotRangeL[1] < 120 or 120 < ezWhenPlotRangeL[0]:
@@ -1095,25 +1150,26 @@ def ezWhen120azElN():
         if 270. <= azDegThis and azDegThis <= 450. and 0. <= elDegThis and elDegThis <= 90.:
             plt.scatter(azDegThis, elDegThis, marker=markerSL[i], s=100., c=colorSL[i])
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
 
     plt.xlim(270., 450.)
     plt.xticks( \
         [ 270.,        300.,  330., 360.,        390., 420., 450.],
-        ['270\nWest', '300', '330',  '0\nFacing North', '30', '60', '90\nEast'])
-    plt.xlabel('Azimuth (Degrees)\nMarkers = Location of Legend Sky Object at UTC Hours')
+        ['270\nWest', '300', '330',  '0\nFacing North', '30', '60', '90\nEast'], fontsize=ezAxisFontSize)
+    plt.xlabel('Azimuth (Degrees)\nMarkers = Location of Legend Sky Object at UTC Hours', fontsize=ezTextFontSize)
 
-    plt.ylabel('Elevation Above Horizon (Degrees)')
+    plt.ylabel('Elevation Above Horizon (Degrees)', fontsize=ezTextFontSize)
     plt.ylim(0., 90.)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     ezWhenDispGrid = 1
     plt.grid(ezWhenDispGrid)
 
     # legend for each skyObject
-    ax.text(455., 85., 'Legend', color='black')
-    ax.text(455., 80., '======', color='black')
+    ax.text(455., 85., 'Legend', color='black', fontsize=ezTextFontSize)
+    ax.text(455., 80., '======', color='black', fontsize=ezTextFontSize)
     for i in range(len(legendSL)):
-        ax.text(455., 75.-i*5., legendSL[i], color=colorSL[i*hourQty])
+        ax.text(455., 75.-i*5., legendSL[i], color=colorSL[i*hourQty], fontsize=ezTextFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -1133,6 +1189,10 @@ def ezWhen210azElDS():
     global hourQty                          # integer
     global titleS                           # string
     global ezWhenPlotRangeL                 # integer list
+
+    global ezTextFontSize                   # integer
+    global ezTitleFontSize                  # integer
+    global ezAxisFontSize                   # integer
 
     # if plot not wanted, then return
     if ezWhenPlotRangeL[1] < 210 or 210 < ezWhenPlotRangeL[0]:
@@ -1227,31 +1287,33 @@ def ezWhen210azElDS():
 
                 plt.scatter(x, y, s=0.1, c='black')
  
-    ax.text(180., 95., 'Zenith', color='black', verticalalignment='bottom', horizontalalignment='center')
-    ax.text(90., -5., '90\u00b0\nEast', color='black', verticalalignment='top', horizontalalignment='right')
+    ax.text(180., 95., 'Zenith', color='black', verticalalignment='bottom', horizontalalignment='center', fontsize=ezTextFontSize)
+    ax.text(90., -5., '90\u00b0\nEast', color='black', verticalalignment='top', horizontalalignment='right', fontsize=ezTextFontSize)
     ax.text(180., -5., '180\u00b0\nFacing South\nAzimuth (Degrees)\nMarkers = Location of Legend Sky Object at UTC Hours'
-        , color='black', verticalalignment='top', horizontalalignment='center')
-    ax.text(270., -5., '270\u00b0\nWest', color='black', verticalalignment='top', horizontalalignment='left')
+        , color='black', verticalalignment='top', horizontalalignment='center', fontsize=ezTextFontSize)
+    ax.text(270., -5., '270\u00b0\nWest', color='black', verticalalignment='top', horizontalalignment='left', fontsize=ezTextFontSize)
 
     plt.axis('equal')       # x and y scales the same
     plt.axis('off')
 
-    plt.title(dayYYMMDD)
+    plt.title(dayYYMMDD, fontsize=ezTitleFontSize)
 
     plt.xlim(80., 280.)
+    plt.xticks(fontsize=ezAxisFontSize)
 
-    plt.ylabel('Elevation Above Horizon (Degrees)')
+    plt.ylabel('Elevation Above Horizon (Degrees)', fontsize=ezTextFontSize)
     plt.ylim(-10., 100.)
+    plt.yticks(fontsize=ezAxisFontSize)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
 
     plt.grid(False)
 
     # legend for each skyObject
-    ax.text(285., 108., 'Legend', color='black')
-    ax.text(285., 100., '======', color='black')
+    ax.text(285., 108., 'Legend', color='black', fontsize=ezTextFontSize)
+    ax.text(285., 100., '======', color='black', fontsize=ezTextFontSize)
     for i in range(len(legendSL)):
-        ax.text(285., 92.-i*8., legendSL[i], color=colorSL[i*hourQty])
+        ax.text(285., 92.-i*8., legendSL[i], color=colorSL[i*hourQty], fontsize=ezTextFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -1271,6 +1333,10 @@ def ezWhen220azElDN():
     global hourQty                          # integer
     global titleS                           # string
     global ezWhenPlotRangeL                 # integer list
+
+    global ezTextFontSize                   # integer
+    global ezTitleFontSize                  # integer
+    global ezAxisFontSize                   # integer
 
     # if plot not wanted, then return
     if ezWhenPlotRangeL[1] < 220 or 220 < ezWhenPlotRangeL[0]:
@@ -1367,31 +1433,33 @@ def ezWhen220azElDN():
 
                 plt.scatter(x, y, s=0.1, c='black')
  
-    ax.text(360., 95., 'Zenith', color='black', verticalalignment='bottom', horizontalalignment='center')
-    ax.text(270., -5., '270\u00b0\nWest', color='black', verticalalignment='top', horizontalalignment='right')
+    ax.text(360., 95., 'Zenith', color='black', verticalalignment='bottom', horizontalalignment='center', fontsize=ezTextFontSize)
+    ax.text(270., -5., '270\u00b0\nWest', color='black', verticalalignment='top', horizontalalignment='right', fontsize=ezTextFontSize)
     ax.text(360., -5., '0\u00b0\nFacing North\nAzimuth (Degrees)\nMarkers = Location of Legend Sky Object at UTC Hours'
-        , color='black', verticalalignment='top', horizontalalignment='center')
-    ax.text(450., -5., '90\u00b0\nEast', color='black', verticalalignment='top', horizontalalignment='left')
+        , color='black', verticalalignment='top', horizontalalignment='center', fontsize=ezTextFontSize)
+    ax.text(450., -5., '90\u00b0\nEast', color='black', verticalalignment='top', horizontalalignment='left', fontsize=ezTextFontSize)
 
     plt.axis('equal')       # x and y scales the same
     plt.axis('off')
 
-    plt.title(dayYYMMDD)
+    plt.title(dayYYMMDD, fontsize=ezTitleFontSize)
 
     plt.xlim(260., 460.)
+    plt.xticks(fontsize=ezAxisFontSize)
 
-    plt.ylabel('Elevation')
+    plt.ylabel('Elevation', fontsize=ezTextFontSize)
     plt.ylim(-10., 100.)
+    plt.yticks(fontsize=ezAxisFontSize)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
 
     plt.grid(False)
 
     # legend for each skyObject
-    ax.text(465., 108., 'Legend', color='black')
-    ax.text(465., 100., '======', color='black')
+    ax.text(465., 108., 'Legend', color='black', fontsize=ezTextFontSize)
+    ax.text(465., 100., '======', color='black', fontsize=ezTextFontSize)
     for i in range(len(legendSL)):
-        ax.text(465., 92.-i*8., legendSL[i], color=colorSL[i*hourQty])
+        ax.text(465., 92.-i*8., legendSL[i], color=colorSL[i*hourQty], fontsize=ezTextFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -1412,6 +1480,10 @@ def ezWhen300azElPZ():
     global titleS                           # string
     global ezWhenPlotRangeL                 # integer list
 
+    global ezTextFontSize                   # integer
+    global ezTitleFontSize                  # integer
+    global ezAxisFontSize                   # integer
+
     # if plot not wanted, then return
     if ezWhenPlotRangeL[1] < 300 or 300 < ezWhenPlotRangeL[0]:
         return(1)
@@ -1430,13 +1502,15 @@ def ezWhen300azElPZ():
         for i in range(len(azDegL)):
             plt.scatter(azDegL[i], elDegL[i], marker=markerSL[i], s=100., c=colorSL[i])
 
-        plt.title(dayYYMMDD)
+        plt.title(dayYYMMDD, fontsize=ezTitleFontSize)
 
-        plt.xlabel('Azimuth')
+        plt.xlabel('Azimuth', fontsize=ezTextFontSize)
         plt.xlim(0., 360.)
+        plt.xticks(fontsize=ezAxisFontSize)
 
-        plt.ylabel('Elevation')
+        plt.ylabel('Elevation', fontsize=ezTextFontSize)
         plt.ylim(0., 90.)
+        plt.yticks(fontsize=ezAxisFontSize)
 
         ezWhenDispGrid = 1
         plt.grid(ezWhenDispGrid)
@@ -1446,23 +1520,23 @@ def ezWhen300azElPZ():
         #c = ax.scatter(azDegL[i] * 3.141 / 180, elDegL[i], marker=markerSL[i], s=100., c=colorSL[i])
         c = ax.scatter(azDegL[i] * piD180, elDegL[i], marker=markerSL[i], s=100., c=colorSL[i])
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
 
     plt.ylim(90., 0.)
 
     ax.set_theta_zero_location('N', offset=0.)
     ax.set_thetagrids((90, 180, 270, 360),
         ('90\u00b0\nEast', '\n\n180\u00b0\nFacing South\nAzimuth (Degrees)\nMarkers = Location of Legend Sky Object at UTC Hours',
-        ' 270\u00b0\n West', 'Bending over backwards North\n0\u00b0'))
+        ' 270\u00b0\n West', 'Bending over backwards North\n0\u00b0'), fontsize=ezTextFontSize)
     ax.set_rlabel_position(135)
-    ax.text(135 * piD180, -3., 'Elevation\nAbove\nHorizon\n(Degrees)', color='black', verticalalignment='top', horizontalalignment='right')
+    ax.text(135 * piD180, -3., 'Elevation\nAbove\nHorizon\n(Degrees)', color='black', verticalalignment='top', horizontalalignment='right', fontsize=ezTextFontSize)
 
     # legend for each skyObject
     legendPolarS = 'Legend\n======'
-    ax.text(308. * piD180, -62., legendPolarS, color='black', verticalalignment='top', horizontalalignment='left')
+    ax.text(308. * piD180, -62., legendPolarS, color='black', verticalalignment='top', horizontalalignment='left', fontsize=ezTextFontSize)
     for i in range(len(legendSL)):
-        legendPolarS = '\n' * (i+2) + legendSL[i]
-        ax.text(308. * piD180, -62., legendPolarS, color=colorSL[i*hourQty], verticalalignment='top', horizontalalignment='left')
+        legendPolarS = '\n' * (i*2+2) + legendSL[i]
+        ax.text(308. * piD180, -62., legendPolarS, color=colorSL[i*hourQty], verticalalignment='top', horizontalalignment='left', fontsize=ezTextFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)

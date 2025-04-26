@@ -494,6 +494,8 @@ def printUsage():
     print()
     print('    -ezColorMap          gnuplot        (color map: jet, turbo, gnuplot2, viridis, plasma..., none = gnuplot)')
     print()
+    print('    -ezTextFontSize      10             (Size of text font)')
+    print()
     print('    -ezDefaultsFile ../bigDish8.txt     (additional file of ezRA arguments)')
     print()
     print('    -eXXXXXXXXXXXXXXzIgonoreThisWholeOneWord')
@@ -608,6 +610,8 @@ def ezConArgumentsFile(ezDefaultsFileNameInput):
 
     global ezColorMap                       # string
 
+    global ezTextFontSize                   # integer
+
     print()
     print('   ezConArgumentsFile(' + ezDefaultsFileNameInput + ') ===============')
 
@@ -649,6 +653,9 @@ def ezConArgumentsFile(ezDefaultsFileNameInput):
 
             elif thisLine0Lower == '-ezColorMap'.lower():
                 ezColorMap = thisLine[1]
+
+            elif thisLine0Lower == '-ezTextFontSize'.lower():
+                ezTextFontSize = int(thisLine[1])
 
             # integer arguments:
             elif thisLine0Lower == '-ezConInputdBm'.lower():
@@ -872,6 +879,8 @@ def ezConArgumentsCommandLine():
 
     global ezColorMap                       # string
 
+    global ezTextFontSize                   # integer
+
     global ezConAzimuth                     # float - force Azimuth   (Degrees)
     global ezConElevation                   # float - force Elevation (Degrees)
     global ezConAddAzDeg                    # float - correction factor, add to file's Azimuth   (Degrees)
@@ -990,6 +999,9 @@ def ezConArgumentsCommandLine():
                 cmdLineSplitIndex += 1      # point to first argument value
                 ezColorMap = cmdLineSplit[cmdLineSplitIndex]   # cmd line allows only one word
 
+            elif cmdLineArgLower == '-ezTextFontSize'.lower():
+                cmdLineSplitIndex += 1      # point to first argument value
+                ezTextFontSize = int(cmdLineSplit[cmdLineSplitIndex])
 
             # integer arguments:
             elif cmdLineArgLower == '-ezConInputdBm'.lower():
@@ -1310,6 +1322,9 @@ def ezConArguments():
 
     global ezColorMap                       # string
 
+    global ezTextFontSize                   # integer
+    global ezTitleFontSize                  # integer
+    global ezAxisFontSize                   # integer
     global ezConAzimuth                     # float - force Azimuth   (Degrees)
     global ezConElevation                   # float - force Elevation (Degrees)
     global ezConAddAzDeg                    # float - correction factor, add to file's Azimuth   (Degrees)
@@ -1381,6 +1396,7 @@ def ezConArguments():
         #ezRAObsName = 'LebanonKS'
         ezRAObsName = ''                    # silly name
         ezColorMap = 'gnuplot'              # default color map
+        ezTextFontSize = 10
 
         ezConInputdBm     =  0
         ezConUseRefSub    =  0
@@ -1479,6 +1495,12 @@ def ezConArguments():
 
     # process arguments from command line
     ezConArgumentsCommandLine()
+
+    # Auto size plot
+    if ezTextFontSize < 6:
+      ezTextFontSize = 6
+    ezTitleFontSize = 2 + ezTextFontSize
+    ezAxisFontSize = ezTextFontSize - 2
 
     # sanity tests
 
@@ -1618,6 +1640,7 @@ def ezConArguments():
         print('   ezConPlotRangeL       =', ezConPlotRangeL)
         print()
         print('   ezColorMap =', ezColorMap)
+        print('   ezTextFontSize =', ezTextFontSize)
 
 
 
@@ -3220,6 +3243,11 @@ def createRef20refPulser():
     global xTickLocsRaw             # float array
     global xTickLabelsRaw           # string list
 
+    global titleS                   # string                creation
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+
     print()
     print('   createRef20refPulser ===============')
 
@@ -3339,16 +3367,17 @@ def createRef20refPulser():
             #plt.plot(np.clip((rawAvgRecentFrac / 1000.) + rawAvgRecentMinAMin - 0.003,
             #    0, 0.99 * rawAvgRecentMinAMin), 'mo-')
 
-            plt.title(titleS)
+            plt.title(titleS, fontsize=ezTitleFontSize)
             plt.grid(ezConDispGrid)
 
-            plt.xlabel(xLabelSRaw)
+            plt.xlabel(xLabelSRaw, fontsize=ezTextFontSize)
             plt.xlim(0, rawLenM1)
-            plt.xticks(xTickLocsRaw, xTickLabelsRaw, rotation=45, ha='right', rotation_mode='anchor')
+            plt.xticks(xTickLocsRaw, xTickLabelsRaw, rotation=45, ha='right', rotation_mode='anchor', fontsize=ezAxisFontSize)
 
             plt.ylabel('Raw Antenna Spectrum Average with Recent Min and Max' \
-                + '\n\n ezConRawSamplesUseL = ' + str(ezConRawSamplesUseL))
+                + '\n\n ezConRawSamplesUseL = ' + str(ezConRawSamplesUseL), fontsize=ezTextFontSize)
             #plt.ylim(-90, 90)
+            plt.yticks(fontsize=ezAxisFontSize)
 
             if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
                 os.remove(plotName)
@@ -3382,16 +3411,17 @@ def createRef20refPulser():
             # rawAvgAvgRecentFrac in connected green
             plt.plot(rawAvgRecentFrac, 'go-')
 
-            plt.title(titleS)
+            plt.title(titleS, fontsize=ezTitleFontSize)
             plt.grid(ezConDispGrid)
 
-            plt.xlabel(xLabelSRaw)
+            plt.xlabel(xLabelSRaw, fontsize=ezTextFontSize)
             plt.xlim(0, rawLenM1)
-            plt.xticks(xTickLocsRaw, xTickLabelsRaw, rotation=45, ha='right', rotation_mode='anchor')
+            plt.xticks(xTickLocsRaw, xTickLabelsRaw, rotation=45, ha='right', rotation_mode='anchor', fontsize=ezAxisFontSize)
 
             plt.ylabel('RawAvg Recent Fraction vs REF Trigger' \
-                + '\n ')
+                + '\n ', fontsize=ezTextFontSize)
             plt.ylim(-0.5, 2)     # clip silly start up values
+            plt.yticks(fontsize=ezAxisFontSize)
 
             if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
                 os.remove(plotName)
@@ -3435,18 +3465,19 @@ def createRef20refPulser():
             temp[np.logical_not(sampleRef)] = np.nan    # mark False sampleRef as np.nan, which will not plot
             plt.plot(temp, 'o', c='violet')
 
-            plt.title(titleS)
+            plt.title(titleS, fontsize=ezTitleFontSize)
             plt.grid(ezConDispGrid)
 
-            plt.xlabel(xLabelSRaw)
+            plt.xlabel(xLabelSRaw, fontsize=ezTextFontSize)
             plt.xlim(0, rawLenM1)
-            plt.xticks(xTickLocsRaw, xTickLabelsRaw, rotation=45, ha='right', rotation_mode='anchor')
+            plt.xticks(xTickLocsRaw, xTickLabelsRaw, rotation=45, ha='right', rotation_mode='anchor', fontsize=ezAxisFontSize)
 
             plt.ylabel('Possible REF in Violet\n\nSampleRef = ' + str(sampleRefSum) \
-                + ' = ' + str(int(100. * sampleRefAvg)) + ' %')
+                + ' = ' + str(int(100. * sampleRefAvg)) + ' %', fontsize=ezTextFontSize)
             #    + '\n\n rawLen = ' + str(rawLen))
             #plt.ylim(-90, 90)
             plt.ylim(-0.5, 2)     # same scale as previous plot
+            plt.yticks(fontsize=ezAxisFontSize)
             
             if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
                 os.remove(plotName)
@@ -3531,19 +3562,20 @@ def createRef20refPulser():
             # sampleBad in connected green
             plt.plot(sampleBad, 'go-')
 
-            plt.title(titleS)
+            plt.title(titleS, fontsize=ezTitleFontSize)
             plt.grid(ezConDispGrid)
 
-            plt.xlabel(xLabelSRaw)
+            plt.xlabel(xLabelSRaw, fontsize=ezTextFontSize)
             plt.xlim(0, rawLenM1)
-            plt.xticks(xTickLocsRaw, xTickLabelsRaw, rotation=45, ha='right', rotation_mode='anchor')
+            plt.xticks(xTickLocsRaw, xTickLabelsRaw, rotation=45, ha='right', rotation_mode='anchor', fontsize=ezAxisFontSize)
 
             plt.ylabel('Samples Marked Invalid\n\nSampleBad = ' + str(sampleBadSum) \
-                + ' = ' + str(int(100. * sampleBadAvg)) + ' %')
+                + ' = ' + str(int(100. * sampleBadAvg)) + ' %', fontsize=ezTextFontSize)
             #    + '\n\n rawLen = ' + str(rawLen))
             #plt.ylim(-90, 90)
             plt.ylim(-0.5, 2)     # same scale as previous plot
-            
+            plt.yticks(fontsize=ezAxisFontSize)
+
             if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
                 os.remove(plotName)
             plt.savefig(plotName, dpi=300, bbox_inches='tight')
@@ -3620,18 +3652,19 @@ def createRef20refPulser():
             temp[np.logical_not(maskRawRef)] = np.nan   # mark False maskRawRef as np.nan, which will not plot
             plt.plot(temp, 'o', c='violet')
 
-            plt.title(titleS)
+            plt.title(titleS, fontsize=ezTitleFontSize)
             plt.grid(ezConDispGrid)
 
-            plt.xlabel(xLabelSRaw)
+            plt.xlabel(xLabelSRaw, fontsize=ezTextFontSize)
             plt.xlim(0, rawLenM1)
-            plt.xticks(xTickLocsRaw, xTickLabelsRaw, rotation=45, ha='right', rotation_mode='anchor')
+            plt.xticks(xTickLocsRaw, xTickLabelsRaw, rotation=45, ha='right', rotation_mode='anchor', fontsize=ezAxisFontSize)
 
             plt.ylabel('maskRawAnt = ' + str(maskRawAntSum) \
                 + ' = ' + str(int(100. * maskRawAntAvg)) + ' %' \
-                + '\n\n rawLen = ' + str(rawLen))
+                + '\n\n rawLen = ' + str(rawLen), fontsize=ezTextFontSize)
             #plt.ylim(-90, 90)
-            
+            plt.yticks(fontsize=ezAxisFontSize)
+
             if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
                 os.remove(plotName)
             plt.savefig(plotName, dpi=300, bbox_inches='tight')
@@ -5853,17 +5886,24 @@ def plotEzCon1dByFreqBin(plotName, plotData1d, plotColorS, plotYLabel):
     global ezConDispGrid                        # integer
     global dopplerSpanD2                        # float
 
+    global titleS                               # string
+    global ezTextFontSize                       # integer
+    global ezTitleFontSize                      # integer
+    global ezAxisFontSize                       # integer
+
     plt.clf()
 
     plt.plot(byFreqBinX, plotData1d, plotColorS)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezConDispGrid)
 
-    plt.xlabel('Doppler (MHz)')
+    plt.xlabel('Doppler (MHz)', fontsize=ezTextFontSize)
     plt.xlim(-dopplerSpanD2, dopplerSpanD2)
+    plt.xticks(fontsize=ezAxisFontSize)
 
-    plt.ylabel(plotYLabel)
+    plt.ylabel(plotYLabel, fontsize=ezTextFontSize)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -5892,11 +5932,15 @@ def plotEzCon1dSamplesAnt(plotName, plotData1d, plotYLimL, plotColorS, plotYLabe
 
     global ezColorMap                           # string
 
+    global ezTextFontSize                       # integer
+    global ezTitleFontSize                      # integer
+    global ezAxisFontSize                       # integer
+
     plt.clf()
 
     plt.plot(plotData1d, plotColorS)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezConDispGrid)
     
     if not len(xTickLocsAnt):
@@ -5932,13 +5976,14 @@ def plotEzCon1dSamplesAnt(plotName, plotData1d, plotYLimL, plotColorS, plotYLabe
         else:
             xLabelSAnt = f'Ant Sample Number (last={antLenM1:,}) with UTC Hour:Min (last=' \
                 + dataTimeUtc[-1].iso[11:16] + ')'
-    plt.xticks(xTickLocsAnt, xTickLabelsAnt, rotation=45, ha='right', rotation_mode='anchor')
-    plt.xlabel(xLabelSAnt)
+    plt.xticks(xTickLocsAnt, xTickLabelsAnt, rotation=45, ha='right', rotation_mode='anchor', fontsize=ezAxisFontSize)
+    plt.xlabel(xLabelSAnt, fontsize=ezTextFontSize)
     plt.xlim(0, antLenM1)
 
-    plt.ylabel(plotYLabel)
+    plt.ylabel(plotYLabel, fontsize=ezTextFontSize)
     if len(plotYLimL):
         plt.ylim(plotYLimL[0], plotYLimL[1])
+    plt.yticks(fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -5970,6 +6015,10 @@ def plotEzCon2dSamples(plotName, plotData2d, plotXLabel, plotXLast, plotYLabel, 
 
     global ezColorMap                           # string
 
+    global ezTextFontSize                       # integer
+    global ezTitleFontSize                      # integer
+    global ezAxisFontSize                       # integer
+
     # plot heat map of ant
     heatVMin = ezConHeatVMinMaxL[0]             # minimum 3d value (color), <=0 for autoscale
     heatVMax = ezConHeatVMinMaxL[1]             # maximum 3d value (color), <=0 for autoscale
@@ -5991,7 +6040,8 @@ def plotEzCon2dSamples(plotName, plotData2d, plotXLabel, plotXLast, plotYLabel, 
             # heatVMin and heatVMax available
             heat_map = sb.heatmap(plotData2d, vmin=heatVMin, vmax=heatVMax, cmap=ezColorMap)
 
-    heat_map.set_title(titleS)
+    heat_map.collections[0].colorbar.ax.tick_params(labelsize=ezTextFontSize)
+    heat_map.set_title(titleS, fontsize=ezTitleFontSize)
     if ezConDispGrid:
         heat_map.grid(b=True, which='major', color='black', linewidth=0.075)
 
@@ -6015,18 +6065,18 @@ def plotEzCon2dSamples(plotName, plotData2d, plotXLabel, plotXLast, plotYLabel, 
         xLabelSAnt = f'{plotXLabel} Sample Number (last={plotXLast:,}) with UTC Hour:Min (last=' \
             + dataTimeUtc[-1].iso[11:16] + ')'
 
-    heat_map.set_xticklabels(xTickLabelsHeatAntL, rotation=90)
-    heat_map.set_xlabel(xLabelSAnt)
+    heat_map.set_xticklabels(xTickLabelsHeatAntL, rotation=90, size=ezAxisFontSize)
+    heat_map.set_xlabel(xLabelSAnt, fontsize=ezTextFontSize)
 
     heat_map.invert_yaxis()
     if ezConDispFreqBin == 1:
         heat_map.set_ylabel(plotYLabel + ':  Frequency Bin',
-            rotation=90, verticalalignment='bottom')
+            rotation=90, verticalalignment='bottom', fontsize=ezTextFontSize)
         heat_map.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(32))
         antYtickFn = lambda x, pos: f'{x:0.0f}'
     elif ezConDispFreqBin == 2:
         heat_map.set_ylabel(plotYLabel + ':  Frequency Bandwidth Fraction',
-            rotation=90, verticalalignment='bottom')
+            rotation=90, verticalalignment='bottom', fontsize=ezTextFontSize)
         # 31.9835 gets 991, but not 1023 !!!!
         heat_map.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(32.))
         antYtickFn = lambda x, pos: f'{x / fileFreqBinQty:0.2f}'
@@ -6034,7 +6084,7 @@ def plotEzCon2dSamples(plotName, plotData2d, plotXLabel, plotXLast, plotYLabel, 
         #heat_map.set_ylabel(plotYLabel + f':  Doppler MHz from {freqCenter:.3f} MHz',
         #    rotation=90, verticalalignment='bottom')
         heat_map.set_ylabel(plotYLabel,
-            rotation=90, verticalalignment='bottom')
+            rotation=90, verticalalignment='bottom', fontsize=ezTextFontSize)
         #  256 / 24 = 10.666666 freqBin per ytick
         #heat_map.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(10.666666))
         # 1024 / 24 = 42.666666 freqBin per ytick
@@ -6042,6 +6092,7 @@ def plotEzCon2dSamples(plotName, plotData2d, plotXLabel, plotXLast, plotYLabel, 
         heat_map.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(fileFreqBinQty / 24.))
         antYtickFn = lambda x, pos: yTickHeatL[int(pos) - 1]
     heat_map.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(antYtickFn))
+    heat_map.yaxis.set_tick_params(labelsize=ezAxisFontSize)
 
     if plotMax:
          # green dots for each sample's max
@@ -7016,6 +7067,11 @@ def plotEzCon088antBTVTByFreqBinAvgFall():
     global ezConDispGrid            # integer
     global dopplerSpanD2            # float
 
+    global titleS                   # string
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+
     #plotName = 'ezCon088antBTVTByFreqAvgFall.png'
     plotName = 'ezCon088' + antXNameL[0] + 'TVTByFreqAvgFall.png'
 
@@ -7053,10 +7109,10 @@ def plotEzCon088antBTVTByFreqBinAvgFall():
     for n in range(len(antXTVTD[0, :])):
         plt.plot(byFreqBinX, [y - n * 0.01 for y in antXTVTD[:, n]], colorPenSL[n % 9], linewidth=0.5)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezConDispGrid)
 
-    plt.xlabel('Doppler (MHz)')
+    plt.xlabel('Doppler (MHz)', fontsize=ezTextFontSize)
     plt.xlim(-dopplerSpanD2, dopplerSpanD2)
 
     #get current axes
@@ -7067,7 +7123,7 @@ def plotEzCon088antBTVTByFreqBinAvgFall():
     ax.yaxis.set_ticklabels([])
 
     #plt.ylabel(antXNameL[1]+'TVT Spectra (time increasing up)')
-    plt.ylabel(antXNameL[1]+'TVT Spectra, Downsampled by Averaging\nTime Increasing Down, downsamplingStep=' + str(downsamplingStep))
+    plt.ylabel(antXNameL[1]+'TVT Spectra, Downsampled by Averaging\nTime Increasing Down, downsamplingStep=' + str(downsamplingStep), fontsize=ezTextFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -7117,6 +7173,11 @@ def plotEzCon098antBTVTByFreqBinMaxFall():
     global ezConDispGrid            # integer
     global dopplerSpanD2            # float
 
+    global titleS                   # string
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+
     #plotName = 'ezCon098antBTVTByFreqMaxFall.png'
     plotName = 'ezCon098' + antXNameL[0] + 'TVTByFreqMaxFall.png'
 
@@ -7155,10 +7216,10 @@ def plotEzCon098antBTVTByFreqBinMaxFall():
     for n in range(len(antXTVTMaxD[0, :])):
         plt.plot(byFreqBinX, [y - n * 0.01 for y in antXTVTMaxD[:, n]], colorPenSL[n % 9], linewidth=0.5)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezConDispGrid)
 
-    plt.xlabel('Doppler (MHz)')
+    plt.xlabel('Doppler (MHz)', fontsize=ezTextFontSize)
     plt.xlim(-dopplerSpanD2, dopplerSpanD2)
 
     #get current axes
@@ -7169,7 +7230,7 @@ def plotEzCon098antBTVTByFreqBinMaxFall():
     ax.yaxis.set_ticklabels([])
 
     #plt.ylabel(antXNameL[1]+'TVTMax Spectra (time increasing up)')
-    plt.ylabel(antXNameL[1]+'TVTMax Spectra, Downsampled by Maximizing\nTime Increasing Down, downsamplingStep=' + str(downsamplingStep))
+    plt.ylabel(antXNameL[1]+'TVTMax Spectra, Downsampled by Maximizing\nTime Increasing Down, downsamplingStep=' + str(downsamplingStep), fontsize=ezTextFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -7708,6 +7769,10 @@ def plotEzCon191sigProg():
     global antXTVAvg                # float array       creation
     global antXNameL                # list of strings
 
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+
     plotName = 'ezCon191sigProg.png'     # Signal Computation Progression
 
     plotCountdown -= 1
@@ -8099,7 +8164,7 @@ def plotEzCon191sigProg():
     plt.plot(antXTVTMaxGain * (ezConOut[:, 19] - antXTVTMaxAvg) + 3200., c='green')
 
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezConDispGrid)
 
     if not len(xTickLocsAnt):
@@ -8137,11 +8202,11 @@ def plotEzCon191sigProg():
         else:
             xLabelSAnt = f'Ant Sample Number (last={antLenM1:,}) with UTC Hour:Min (last=' \
                 + dataTimeUtc[-1].iso[11:16] + ')'
-    plt.xticks(xTickLocsAnt, xTickLabelsAnt, rotation=45, ha='right', rotation_mode='anchor')
-    plt.xlabel(xLabelSAnt)
+    plt.xticks(xTickLocsAnt, xTickLabelsAnt, rotation=45, ha='right', rotation_mode='anchor', fontsize=ezAxisFontSize)
+    plt.xlabel(xLabelSAnt, fontsize=ezTextFontSize)
     plt.xlim(0, antLenM1)
 
-    plt.ylabel('Signal Computation Progression\nfrom AntRaw to '+antXNameL[1]+'TVTMax')
+    plt.ylabel('Signal Computation Progression\nfrom AntRaw to '+antXNameL[1]+'TVTMax', fontsize=ezTextFontSize)
     plt.ylim(-150, 3350)
     #     3200.,     3000., 2800.,    2600.,    2400.,  2200.,     2000.,    1800., 1600.,
     #     1400.,   1200.,      1000.,   800.,       600.,     400.,      200.,         0.],
@@ -8151,7 +8216,7 @@ def plotEzCon191sigProg():
         3200.,                 0.],
         ['AntRaw', 'Ant', 'AntMax', 'AntBas', 'AntB', 'AntBMax', 'RefRaw', 'Ref', 'RefMax',
         'AntRA', 'AntRABas', 'AntRB', 'AntRBMax', antXNameL[1]+'TV', antXNameL[1]+'TVT',
-        antXNameL[1]+'TVTMax', 'GLat'])
+        antXNameL[1]+'TVTMax', 'GLat'], fontsize=ezAxisFontSize)
     #    'AntRA', 'AntRABas', 'AntRB', 'AntRBMax', 'AntXTV', 'AntXTVT', 'AntXTVTMax', 'GLatDeg'])
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
@@ -8254,6 +8319,10 @@ def plotEzCon200rawRawAvg():
     #global ezConPlotRangeL          # integer list
     global ezConPlotRequestedL      # integer list
 
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+
     plotName = 'ezCon200rawRawAvg.png'
 
     plotCountdown -= 1
@@ -8276,7 +8345,7 @@ def plotEzCon200rawRawAvg():
     # plot all raw data as connected green dots
     plt.plot(rawAvg, 'go-')
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezConDispGrid)
 
     if ezConRawSamplesUseL:
@@ -8285,7 +8354,7 @@ def plotEzCon200rawRawAvg():
     else:
         xLabelSRaw = f'RawRaw Sample Number (last={rawLenM1:,})' \
             + ' with UTC Hour:Min (last=' + dataTimeUtc[-1].iso[11:16] + ')'
-    plt.xlabel(xLabelSRaw)
+    plt.xlabel(xLabelSRaw, fontsize=ezTextFontSize)
     plt.xlim(0, rawLenM1)
     xTickLocsRaw, xTickLabelsRaw = plt.xticks()
     # dataTimeUtcStrThis = dataTimeUtc[n].iso
@@ -8307,10 +8376,11 @@ def plotEzCon200rawRawAvg():
         xTickLabelsRaw[-1] = f'{rawLenM1 + ezConRawSamplesUseL[0]:,}  ' + dataTimeUtc[-1].iso[11:16]
     else:
         xTickLabelsRaw[-1] = f'{rawLenM1:,}  ' + dataTimeUtc[-1].iso[11:16]
-    plt.xticks(xTickLocsRaw, xTickLabelsRaw, rotation=45, ha='right', rotation_mode='anchor')
+    plt.xticks(xTickLocsRaw, xTickLabelsRaw, rotation=45, ha='right', rotation_mode='anchor', fontsize=ezAxisFontSize)
 
     plt.ylabel('RawRaw Spectrum Average' \
-        + '\n\n ezConRawSamplesUseL = ' + str(ezConRawSamplesUseL))
+        + '\n\n ezConRawSamplesUseL = ' + str(ezConRawSamplesUseL), fontsize=ezTextFontSize)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -8336,6 +8406,10 @@ def plotEzCon201ArawAvg():
     #global ezConPlotRangeL          # integer list
     global ezConPlotRequestedL      # integer list
 
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+
     plotName = 'ezCon201ArawAvg.png'
 
     plotCountdown -= 1
@@ -8358,7 +8432,7 @@ def plotEzCon201ArawAvg():
     # plot all raw data as connected green dots
     plt.plot(rawAvg, 'go-')
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezConDispGrid)
 
     if ezConRawSamplesUseL:
@@ -8367,7 +8441,7 @@ def plotEzCon201ArawAvg():
     else:
         xLabelSRaw = f'Raw Sample Number (last={rawLenM1:,})' \
             + ' with UTC Hour:Min (last=' + dataTimeUtc[-1].iso[11:16] + ')'
-    plt.xlabel(xLabelSRaw)
+    plt.xlabel(xLabelSRaw, fontsize=ezTextFontSize)
     plt.xlim(0, rawLenM1)
     xTickLocsRaw, xTickLabelsRaw = plt.xticks()
     # dataTimeUtcStrThis = dataTimeUtc[n].iso
@@ -8389,10 +8463,11 @@ def plotEzCon201ArawAvg():
         xTickLabelsRaw[-1] = f'{rawLenM1 + ezConRawSamplesUseL[0]:,}  ' + dataTimeUtc[-1].iso[11:16]
     else:
         xTickLabelsRaw[-1] = f'{rawLenM1:,}  ' + dataTimeUtc[-1].iso[11:16]
-    plt.xticks(xTickLocsRaw, xTickLabelsRaw, rotation=45, ha='right', rotation_mode='anchor')
+    plt.xticks(xTickLocsRaw, xTickLabelsRaw, rotation=45, ha='right', rotation_mode='anchor', fontsize=ezAxisFontSize)
 
     plt.ylabel('Raw Spectrum Average' \
-        + '\n\n ezConRawSamplesUseL = ' + str(ezConRawSamplesUseL))
+        + '\n\n ezConRawSamplesUseL = ' + str(ezConRawSamplesUseL), fontsize=ezTextFontSize)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -8416,6 +8491,11 @@ def plotEzCon201EsampleRefAgain():
     global xTickLocsRaw             # float array
     global xTickLabelsRaw           # string list
 
+    global titleS                   # string
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+
     plotName = 'ezCon201EsampleRefAgain.png'
 
     #if ezConPlotRangeL[0] <= 201 and 201 <= ezConPlotRangeL[1]:
@@ -8435,19 +8515,20 @@ def plotEzCon201EsampleRefAgain():
 
     plt.plot(sampleRefAgain, 'bo-')
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezConDispGrid)
 
-    plt.xlabel(xLabelSRaw)
+    plt.xlabel(xLabelSRaw, fontsize=ezTextFontSize)
     plt.xlim(0, rawLenM1)
-    plt.xticks(xTickLocsRaw, xTickLabelsRaw, rotation=45, ha='right', rotation_mode='anchor')
+    plt.xticks(xTickLocsRaw, xTickLabelsRaw, rotation=45, ha='right', rotation_mode='anchor', fontsize=ezAxisFontSize)
 
     #plt.ylabel('sampleRefAgain' \
     #    + '\n\n sampleRefAgain = ' + str(int(100. * sampleRefAgain.sum() / rawLen)) + ' %')
     plt.ylabel('sampleRefAgain = ' + str(sampleRefAgainSum) \
         + ' = ' + str(int(100. * sampleRefAgainSum / rawLen)) + ' %' \
-        + '\n\n rawLen = ' + str(rawLen))
+        + '\n\n rawLen = ' + str(rawLen), fontsize=ezTextFontSize)
     #plt.ylim(-90, 90)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -8471,6 +8552,11 @@ def plotEzCon201GrawAntRef():
     global xLabelSRaw               # string
     global xTickLocsRaw             # float array
     global xTickLabelsRaw           # string list
+
+    global titleS                   # string
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     plotName = 'ezCon201GrawAntRef.png'
 
@@ -8555,15 +8641,16 @@ def plotEzCon201GrawAntRef():
         # plot rawAvgAntNoGap as connected blue dots
         plt.plot(rawAvgAntNoGap, 'bo-')
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezConDispGrid)
 
-    plt.xlabel(xLabelSRaw)
+    plt.xlabel(xLabelSRaw, fontsize=ezTextFontSize)
     plt.xlim(0, rawLenM1)
-    plt.xticks(xTickLocsRaw, xTickLabelsRaw, rotation=45, ha='right', rotation_mode='anchor')
+    plt.xticks(xTickLocsRaw, xTickLabelsRaw, rotation=45, ha='right', rotation_mode='anchor', fontsize=ezAxisFontSize)
 
     plt.ylabel('Last Raw Spectrum Average   (Ant = blue, Ref = violet)'
-        + '\n\n ezConRawSamplesUseL = ' + str(ezConRawSamplesUseL))
+        + '\n\n ezConRawSamplesUseL = ' + str(ezConRawSamplesUseL), fontsize=ezTextFontSize)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -8583,6 +8670,11 @@ def plotEzCon201HtimeUtcMjdDBetweenRaw():
     global xLabelSRaw               # string
     global xTickLocsRaw             # float array
     global xTickLabelsRaw           # string list
+
+    global titleS                   # string
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     plotName = 'ezCon201HtimeUtcMjdDBetweenRaw.png'
 
@@ -8608,20 +8700,22 @@ def plotEzCon201HtimeUtcMjdDBetweenRaw():
 
     plt.plot(timeUtcMjdDBetweenRaw, 'go-')
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezConDispGrid)
 
     plt.xlim(0, rawLenM1 - 1)
+    plt.xticks(fontsize=ezAxisFontSize)
 
     plt.ylabel('Seconds Between ' + str(rawLen) + ' Raw Samples' \
         + '\n\nMedian=' + str(int(np.median(timeUtcMjdDBetweenRaw) + 0.5)) \
         + '  Mean=' + str(timeUtcMjdDBetweenRawAvg) \
-        + '  Span=' + str(timeUtcMjdDBetweenRawSpan))
+        + '  Span=' + str(timeUtcMjdDBetweenRawSpan), fontsize=ezTextFontSize)
     # truncate y axis if too large
     axes = plt.gca()
     y_min, y_max = axes.get_ylim()
     if 400 < y_max - y_min:
         plt.ylim(0, 400)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -8640,6 +8734,11 @@ def plotEzCon201ItimeUtcMjdDBetweenAntRaw():
     global antLenM1                 # integer
 
     global maskRawAnt               # Boolean array
+
+    global titleS                   # string
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     plotName = 'ezCon201ItimeUtcMjdDBetweenAntRaw.png'
 
@@ -8670,15 +8769,17 @@ def plotEzCon201ItimeUtcMjdDBetweenAntRaw():
 
     plt.plot(timeUtcMjdDBetweenRawAnt, 'bo-')
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezConDispGrid)
 
     plt.xlim(0, antLenM1 - 1)
+    plt.xticks(fontsize=ezAxisFontSize)
 
     plt.ylabel('Seconds Between ' + str(antLen) + ' AntRaw Samples' \
         + '\n\nMedian=' + str(int(np.median(timeUtcMjdDBetweenRawAnt) + 0.5)) \
         + '  Mean=' + str(timeUtcMjdDBetweenRawAntAvg) \
-        + '  Span=' + str(timeUtcMjdDBetweenRawAntSpan))
+        + '  Span=' + str(timeUtcMjdDBetweenRawAntSpan), fontsize=ezTextFontSize)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -8695,6 +8796,11 @@ def plotEzCon201JtimeUtcMjdDBetweenRefRaw():
     global rawLen                   # integer
 
     global maskRawRef               # Boolean array
+
+    global titleS                   # string
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     plotName = 'ezCon201JtimeUtcMjdDBetweenRefRaw.png'
 
@@ -8726,11 +8832,13 @@ def plotEzCon201JtimeUtcMjdDBetweenRefRaw():
         plt.plot([0, 1], [0, 0], 'o-', c='violet')
 
         plt.xlim(0, 1)
+        plt.xticks(fontsize=ezAxisFontSize)
         plt.ylim(0, 1)
+        plt.yticks(fontsize=ezAxisFontSize)
 
-        plt.ylabel('Seconds Between ' + str(refQty) + ' RefRaw Samples\n\n')
+        plt.ylabel('Seconds Between ' + str(refQty) + ' RefRaw Samples\n\n', fontsize=ezTextFontSize)
 
-        plt.text(0, 0.5, '      Warning: Can not create this plot with less than 2 Ref samples')
+        plt.text(0, 0.5, '      Warning: Can not create this plot with less than 2 Ref samples', fontsize=ezTextFontSize)
         
     else:
         timeUtcMjdRaw = np.empty(rawLen)
@@ -8746,13 +8854,15 @@ def plotEzCon201JtimeUtcMjdDBetweenRefRaw():
 
         plt.plot(timeUtcMjdDBetweenRawRef, 'o-', c='violet')
         plt.xlim(0, refQty - 2)
+        plt.xticks(fontsize=ezAxisFontSize)
 
         plt.ylabel('Seconds Between ' + str(refQty) + ' RefRaw Samples' \
             + '\n\nMedian=' + str(int(np.median(timeUtcMjdDBetweenRawRef) + 0.5)) \
             + '  Mean=' + str(timeUtcMjdDBetweenRawRefAvg) \
-            + '  Span=' + str(timeUtcMjdDBetweenRawRefSpan))
+            + '  Span=' + str(timeUtcMjdDBetweenRawRefSpan), fontsize=ezTextFontSize)
+        plt.yticks(fontsize=ezAxisFontSize)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezConDispGrid)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
@@ -9987,6 +10097,10 @@ def plotEzCon382antXTByFreqBinAvgRfi():
     global ezConPlotRequestedL      # integer list
     global OutFreqString            # string
 
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+
     #plotName = 'ezCon382antXTByFreqAvgRfi.png'
     plotName = 'ezCon382' + antXNameL[0] + 'TByFreqAvgRfi.png'
     # for RFI filtering, to help create ezDefaults.txt ezConHideFreqBin arguments, 
@@ -10092,13 +10206,14 @@ def plotEzCon382antXTByFreqBinAvgRfi():
     # calculate average by Freq Bin and plot by Doppler
     plt.plot(antXTByFreqBinSumAvg, range(fileFreqBinQty), 'green')
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(1)
 
-    plt.xlabel(antXNameL[1]+'T Average Spectrum')
+    plt.xlabel(antXNameL[1]+'T Average Spectrum', fontsize=ezTextFontSize)
     # 2% of the data span as a spacing on each end
     plt.xlim(antXTByFreqBinSumAvgMin - 2 * antXTByFreqBinSumAvgSpanD100,
         antXTByFreqBinSumAvgMax + 2 * antXTByFreqBinSumAvgSpanD100)
+    plt.xticks(fontsize=ezAxisFontSize)
 
     yTick382Locs   = []
     yTick382Labels = []
@@ -10115,9 +10230,9 @@ def plotEzCon382antXTByFreqBinAvgRfi():
         else:
             yTick382Labels.append(f'{yTick382LocsIInt:d}  {i / 20.:0.2f}   {dopplerThis:0.2f}')
 
-    plt.yticks(yTick382Locs, yTick382Labels)
+    plt.yticks(yTick382Locs, yTick382Labels, fontsize=ezAxisFontSize)
     #plt.ylabel('Frequency Bin and Spectrum Fraction')
-    plt.ylabel('Frequency Bin, Spectrum Fraction, and Doppler')
+    plt.ylabel('Frequency Bin, Spectrum Fraction, and Doppler', fontsize=ezTextFontSize)
     #plt.ylim(0, fileFreqBinQty)
     plt.ylim(fileFreqBinQty * 1.001, 0)
 
@@ -10192,6 +10307,11 @@ def plotEzCon388antBTVTByFreqBinAvgAll():
     global ezConDispGrid            # integer
     global dopplerSpanD2            # float
 
+    global titleS                   # string
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+
     #plotName = 'ezCon388antBTVTByFreqAvgAll.png'
     plotName = 'ezCon388' + antXNameL[0] + 'TVTByFreqAvgAll.png'
 
@@ -10233,14 +10353,16 @@ def plotEzCon388antBTVTByFreqBinAvgAll():
     for n in range(len(antXTVTD[0, :])):
         plt.plot(byFreqBinX, antXTVTD[:, n], colorPenSL[n % 9], linewidth=0.5)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezConDispGrid)
 
-    plt.xlabel('Doppler (MHz)')
+    plt.xlabel('Doppler (MHz)', fontsize=ezTextFontSize)
     plt.xlim(-dopplerSpanD2, dopplerSpanD2)
+    plt.xticks(fontsize=ezAxisFontSize)
 
-    plt.ylabel(antXNameL[1]+'TVT Spectra')
-    plt.ylabel(antXNameL[1]+'TVT Spectra, Downsampled by Averaging')
+    #plt.ylabel(antXNameL[1]+'TVT Spectra')
+    plt.ylabel(antXNameL[1]+'TVT Spectra, Downsampled by Averaging', fontsize=ezTextFontSize)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -10313,6 +10435,11 @@ def plotEzCon398antBTVTByFreqBinMaxAll():
     global ezConDispGrid            # integer
     global dopplerSpanD2            # float
 
+    global titleS                   # string
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+
     #plotName = 'ezCon398antBTVTByFreqMaxAll.png'
     plotName = 'ezCon398' + antXNameL[0] + 'TVTByFreqMaxAll.png'
 
@@ -10355,13 +10482,15 @@ def plotEzCon398antBTVTByFreqBinMaxAll():
     for n in range(len(antXTVTMaxD[0, :])):
         plt.plot(byFreqBinX, antXTVTMaxD[:, n], colorPenSL[n % 9], linewidth=0.5)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezConDispGrid)
 
-    plt.xlabel('Doppler (MHz)')
+    plt.xlabel('Doppler (MHz)', fontsize=ezTextFontSize)
     plt.xlim(-dopplerSpanD2, dopplerSpanD2)
+    plt.xticks(fontsize=ezAxisFontSize)
 
-    plt.ylabel(antXNameL[1]+'TVTMax Spectra, Downsampled by Maximizing')
+    plt.ylabel(antXNameL[1]+'TVTMax Spectra, Downsampled by Maximizing', fontsize=ezTextFontSize)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -10443,6 +10572,10 @@ def plotEzCon510velGLon():
 
     global ezColorMap               # string
 
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+
     plotName = 'ezCon510velGLon.png'
 
     plotCountdown -= 1
@@ -10496,22 +10629,24 @@ def plotEzCon510velGLon():
     plt.axvline(x = -90, linewidth=0.5, color='black')
 
     cbar = plt.colorbar(pts, orientation='vertical', pad=0.06)
+    cbar.ax.tick_params(labelsize=ezTextFontSize)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     #plt.grid(ezConDispGrid)
     plt.grid(0)
 
-    plt.xlabel('Galactic Longitude (degrees)')
+    plt.xlabel('Galactic Longitude (degrees)', fontsize=ezTextFontSize)
     plt.xlim(180, -180)        # in degrees
     plt.xticks([  180,   90,   0,   -90,   -180],
-               [ '180', '90', '0', '-90', '-180'])
+               [ '180', '90', '0', '-90', '-180'], fontsize=ezAxisFontSize)
 
     plt.ylim(-velocitySpanMax, velocitySpanMax)        # in velocity
+    plt.yticks(fontsize=ezAxisFontSize)
 
     plt.ylabel('Interpolated Velocity (km/s) by Galactic Longitude' \
         + f'\nVelocity Count: Sum={velGLonP180CountSum:,}' \
         + f' Nonzero = {velGLonP180CountNonzero} of {len(velGLonP180Count)}',
-        rotation=90, verticalalignment='bottom')
+        rotation=90, verticalalignment='bottom', fontsize=ezTextFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -10532,6 +10667,10 @@ def plotEzCon519velGLonCount():
     #global ezConPlotRangeL          # integer list
     global ezConPlotRequestedL      # integer list
 
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+
     plotName = 'ezCon519velGLonCount.png'
 
     plotCountdown -= 1
@@ -10547,14 +10686,14 @@ def plotEzCon519velGLonCount():
     plt.clf()
     plt.plot(np.arange(-180, +181, 1), velGLonP180Count)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     #plt.grid(ezConDispGrid)
     plt.grid(0)
 
-    plt.xlabel('Galactic Longitude (degrees)')
+    plt.xlabel('Galactic Longitude (degrees)', fontsize=ezTextFontSize)
     plt.xlim(180, -180)        # in degrees
     plt.xticks([  180,   90,   0,   -90,   -180],
-               [ '180', '90', '0', '-90', '-180'])
+               [ '180', '90', '0', '-90', '-180'], fontsize=ezAxisFontSize)
 
     # if any Galactic plane crossings, velGLonP180 has been (partially?) filled with averages
     velGLonP180CountNonzero = np.count_nonzero(velGLonP180Count)
@@ -10563,8 +10702,10 @@ def plotEzCon519velGLonCount():
 
     plt.ylabel('Velocity Data Counts by Galactic Longitude' \
         + f'\nVelocity Count: Sum={velGLonP180CountSum:,}' \
-        + f' Nonzero={velGLonP180CountNonzero} of {len(velGLonP180Count)}')
+        + f' Nonzero={velGLonP180CountNonzero} of {len(velGLonP180Count)}', fontsize=ezTextFontSize)
     #    rotation=90, verticalalignment='bottom')
+
+    plt.yticks(fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -10657,6 +10798,10 @@ def plotEzCon520velGLonPolar():
 
     global ezColorMap               # string
 
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+
     plotName = 'ezCon520velGLonPolar.png'     # Velocity by Galactic Longitude with pcolormesh
 
     plotCountdown -= 1
@@ -10684,21 +10829,22 @@ def plotEzCon520velGLonPolar():
     plt.grid(0)
     im = plt.pcolormesh(theta, r, velGLonP180.T, cmap=plt.get_cmap(ezColorMap), shading='auto')
 
-    fig.colorbar(im, ax=ax, pad=0.1)
+    cbar = fig.colorbar(im, ax=ax, pad=0.1)
+    cbar.ax.tick_params(labelsize=ezTextFontSize)
 
     polarPlot = plt.plot(azm, r, color='black', linestyle='none')
     plt.grid(1)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
 
-    ax.set_rgrids((fileFreqBinQty/2.,), ('',))
+    ax.set_rgrids((fileFreqBinQty/2.,), ('',), fontsize=ezAxisFontSize)
     ax.set_theta_zero_location('S', offset=0.)
-    ax.set_thetagrids((90, 180, 270, 360), ('-90', '0', '90', '180 and -180'))
+    ax.set_thetagrids((90, 180, 270, 360), ('-90', '0', '90', '180 and -180'), fontsize=ezAxisFontSize)
 
-    ax.set_xlabel('Galactic Longitude (degrees) of Spectra')
+    ax.set_xlabel('Galactic Longitude (degrees) of Spectra', fontsize=ezTextFontSize)
     ax.set_ylabel('Radius Is Increasing "Velocity",\n\n' \
         + 'Radius Is Increasing Receding,\n\n' \
-        + 'Radius Is Decreasing Doppler\n\n')
+        + 'Radius Is Decreasing Doppler\n\n', fontsize=ezTextFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -10721,6 +10867,9 @@ def plotEzCon529velGLonPolarCount():
 
     global ezColorMap               # string
 
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     plotName = 'ezCon529velGLonPolarCount.png'     # Velocity by Galactic Longitude with pcolormesh
 
@@ -10751,22 +10900,23 @@ def plotEzCon529velGLonPolarCount():
     plt.grid(0)
     im = plt.pcolormesh(theta, r, velGLonP180CountPolar, cmap=plt.get_cmap(ezColorMap), shading='auto')
 
-    fig.colorbar(im, ax=ax, pad=0.1)
+    cbar = fig.colorbar(im, ax=ax, pad=0.1)
+    cbar.ax.tick_params(labelsize=ezTextFontSize)
 
     polarPlot = plt.plot(azm, r, color='black', linestyle='none')
     plt.grid(1)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
 
-    ax.set_rgrids((fileFreqBinQty/2.,), ('',))
+    ax.set_rgrids((fileFreqBinQty/2.,), ('',), fontsize=ezAxisFontSize)
     ax.set_theta_zero_location('S', offset=0.)
-    ax.set_thetagrids((90, 180, 270, 360), ('-90', '0', '90', '180 and -180'))
+    ax.set_thetagrids((90, 180, 270, 360), ('-90', '0', '90', '180 and -180'), fontsize=ezAxisFontSize)
 
-    ax.set_xlabel('Galactic Longitude (degrees) of Spectra')
+    ax.set_xlabel('Galactic Longitude (degrees) of Spectra', fontsize=ezTextFontSize)
     velGLonP180CountNonzero = np.count_nonzero(velGLonP180Count)
     ax.set_ylabel('Velocity Data Counts by Galactic Longitude' \
         + f'\nVelocity Count: Sum={velGLonP180CountSum:,}' \
-        + f' Nonzero={velGLonP180CountNonzero} of {len(velGLonP180Count)}\n\n')
+        + f' Nonzero={velGLonP180CountNonzero} of {len(velGLonP180Count)}\n\n', fontsize=ezTextFontSize)
     #        ax.set_ylabel('Velocity Data Counts by Galactic Longitude' \
     #            + f'\nVelocity Count: Sum={velGLonP180CountSum:,}' \
     #            + f' Nonzero={velGLonP180CountNonzero} of {len(velGLonP180Count)}')
@@ -10794,6 +10944,10 @@ def plotEzCon530galDecGLon():
     global ezConPlotRequestedL      # integer list
 
     global ezColorMap               # string
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     plotName = 'ezCon530galDecGLon.png'
 
@@ -10833,21 +10987,22 @@ def plotEzCon530galDecGLon():
     plt.axvline(x = -90, linewidth=0.5, color='black')
 
     cbar = plt.colorbar(pts, orientation='vertical', pad=0.06)
+    cbar.ax.tick_params(labelsize=ezTextFontSize)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(0)
 
-    plt.xlabel('Galactic Longitude (degrees)')
+    plt.xlabel('Galactic Longitude (degrees)', fontsize=ezTextFontSize)
     plt.xlim(180, -180)        # in degrees
     plt.xticks([  180,   90,   0,   -90,   -180],
-               [ '180', '90', '0', '-90', '-180'])
+               [ '180', '90', '0', '-90', '-180'], fontsize=ezAxisFontSize)
 
     plt.ylabel('Velocity Counts on Declination by Galactic Longitude' \
         + f'\nVelocity Count Sum = {velGLonP180CountSum:,}',
-        rotation=90, verticalalignment='bottom')
+        rotation=90, verticalalignment='bottom', fontsize=ezTextFontSize)
     plt.ylim(0, 180)                # in decP90
     plt.yticks([ 0,     30,    60,    90,  120,  150,  180],
-               [ '-90', '-60', '-30', '0', '30', '60', '90'])
+               [ '-90', '-60', '-30', '0', '30', '60', '90'], fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -10872,6 +11027,10 @@ def plotEzCon541velGLonEdges():
     global dopplerSpanD2            # float
     #global ezConPlotRangeL          # integer list
     global ezConPlotRequestedL      # integer list
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     plotName = 'ezCon541velGLonEdges.png'
 
@@ -10950,13 +11109,13 @@ def plotEzCon541velGLonEdges():
         plt.plot(np.arange(-180, +181, 1), velGLonLEdge, 'b.')
 
 
-        plt.title(titleS)
+        plt.title(titleS, fontsize=ezTitleFontSize)
         plt.grid(0)
 
-        plt.xlabel('Galactic Longitude (degrees)')
+        plt.xlabel('Galactic Longitude (degrees)', fontsize=ezTextFontSize)
         plt.xlim(180, -180)        # in degrees
         plt.xticks([  180,   90,   0,   -90,   -180],
-                   [ '180', '90', '0', '-90', '-180'])
+                   [ '180', '90', '0', '-90', '-180'], fontsize=ezAxisFontSize)
 
         ylabelS = 'Velocity Edge: Upper (Red) and Lower (Blue) (km/s)'
         # if ezConVelGLonEdgeLevel not 0, then ezConVelGLonEdgeFrac ignored
@@ -10966,7 +11125,7 @@ def plotEzCon541velGLonEdges():
             ylabelS += f'\nezConVelGLonEdge: Frac={ezConVelGLonEdgeFrac:0.4f}'
             ylabelS += f' Level={velGLonEdgeLevel:0.4f}'
 
-        plt.ylabel(ylabelS)
+        plt.ylabel(ylabelS, fontsize=ezTextFontSize)
         plt.ylim(-270, 270)
 
         if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
@@ -11012,12 +11171,12 @@ def plotEzCon541velGLonEdges():
 
     plt.plot(galGasRadius, galGasGalMax, 'g.')
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezConDispGrid)
-    plt.xlabel('Gas Radius from Galactic Center (Light Years)')
+    plt.xlabel('Gas Radius from Galactic Center (Light Years)', fontsize=ezTextFontSize)
     plt.xlim(0, 26000)        # radius from 0 to Solar radius from Galactic center (=26000 light years)
     plt.xticks([0,      5000.,   10000.,   15000.,   20000.,   25000.],
-               ['0', '5,000', '10,000', '15,000', '20,000', '25,000'])
+               ['0', '5,000', '10,000', '15,000', '20,000', '25,000'], fontsize=ezAxisFontSize)
 
     ylabelS = 'Gas Max Velocity around Galactic Center (km/s)'
     # if ezConVelGLonEdgeLevel not 0, then ezConVelGLonEdgeFrac ignored
@@ -11026,7 +11185,7 @@ def plotEzCon541velGLonEdges():
     else:
         ylabelS += f'\nezConVelGLonEdge: Frac={ezConVelGLonEdgeFrac:0.4f}'
         ylabelS += f' Level={velGLonEdgeLevel:0.4f}'
-    plt.ylabel(ylabelS)
+    plt.ylabel(ylabelS, fontsize=ezTextFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -11045,6 +11204,10 @@ def plotEzCon800antXTVTMaxIdxGLon():
     global ezConPlotRequestedL      # integer list
 
     global ezColorMap               # string
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     plotName = 'ezCon800' + antXNameL[0] + 'TVTMaxIdxGLon.png'
 
@@ -11080,19 +11243,21 @@ def plotEzCon800antXTVTMaxIdxGLon():
     pts = plt.scatter(ezConOut[:, 4]+360., antXTVTMaxIndex,
         s=1, marker='|', c='red')
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(0)
 
-    plt.xlabel('Galactic Longitude (degrees)')
+    plt.xlabel('Galactic Longitude (degrees)', fontsize=ezTextFontSize)
     #plt.xlim(180, -180)        # in degrees
     #plt.xlim(-180, 180)        # in degrees
     #plt.xticks([  180,   90,   0,   -90,   -180],
-    #           [ '180', '90', '0', '-90', '-180'])
+    #           [ '180', '90', '0', '-90', '-180'], fontsize=ezAxisFontSize)
     plt.xlim(0, 360)        # in degrees
+    plt.xticks(fontsize=ezAxisFontSize)
 
-    plt.ylabel('Index of ' + antXNameL[1] + 'TVT Spectrum Maximum (increasing freq)')
+    plt.ylabel('Index of ' + antXNameL[1] + 'TVT Spectrum Maximum (increasing freq)', fontsize=ezTextFontSize)
     #plt.ylim(-270, 270)
     plt.ylim(0, 400)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -11114,6 +11279,10 @@ def plotEzCon690gLonDegByFreqAvg():
     global byFreqBinX               # float array
     #global ezConPlotRangeL          # integer list
     global ezConPlotRequestedL      # integer list
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     # if anything in velGLonP180 to plot
     #if ezConPlotRangeL[0] <= 690 and 690 <= ezConPlotRangeL[1] and velGLonP180CountSum:
@@ -11164,11 +11333,12 @@ def plotEzCon690gLonDegByFreqAvg():
             # velGLonP180 stores increasing velocity, but X axis is increasing freq, so use -byFreqBinX
             plt.plot(-byFreqBinX, velGLonP180[:, gLonP180])
 
-            plt.title(titleS)
+            plt.title(titleS, fontsize=ezTitleFontSize)
             plt.grid(ezConDispGrid)
 
-            plt.xlabel('Doppler (MHz)')
+            plt.xlabel('Doppler (MHz)', fontsize=ezTextFontSize)
             plt.xlim(-dopplerSpanD2, dopplerSpanD2)
+            plt.xticks(fontsize=ezAxisFontSize)
 
             if 0:
                 # new ylim for each ezCon690GLonDegP180_nnnByFreqBinAvg plot
@@ -11185,7 +11355,9 @@ def plotEzCon690gLonDegByFreqAvg():
 
             plt.ylabel('Average ' + antXNameL[1] + 'TV Spectrum' \
                 + '\n\nGalactic Longitude = ' + gLonDegS + ' degrees', \
-                rotation=90, verticalalignment='bottom')
+                rotation=90, verticalalignment='bottom', fontsize=ezTextFontSize)
+
+            plt.yticks(fontsize=ezAxisFontSize)
 
             if os.path.exists(plotName): # to force plot file date update, if file exists, delete it
                 os.remove(plotName)

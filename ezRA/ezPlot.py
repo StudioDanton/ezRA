@@ -141,6 +141,8 @@ def printUsage():
     #print()
     print('    -ezPlot481defDayH     23.9345    (Defined Day length (hours))')
     print('    -ezPlot481res         1440       (Defined Day resolution (24*60=1440)')
+
+    print('    -ezTextFontSize       10         (Size of text font)')
     print()
     print('    -ezDefaultsFile ../bigDish8.txt  (additional file of ezRA arguments)')
     print()
@@ -181,6 +183,7 @@ def printHello():
     print('=================================================')
     print(' Local time =', time.asctime(time.localtime()))
     print(' programRevision =', programRevision)
+    print(' Python sys.version =', sys.version)
     print()
 
     commandString = '  '.join(sys.argv)
@@ -212,6 +215,7 @@ def ezPlotArgumentsFile(ezDefaultsFileNameInput):
     global ezPlot481res                     # integer
     global ezPlotPlotRangeL                 # integer list
 
+    global ezTextFontSize                   # integer
 
     print()
     print('   ezPlotArgumentsFile(' + ezDefaultsFileNameInput + ') ===============')
@@ -251,6 +255,10 @@ def ezPlotArgumentsFile(ezDefaultsFileNameInput):
 
             elif thisLine0Lower == '-ezRAObsName'.lower():
                 ezRAObsName = thisLine[1]
+
+            elif thisLine0Lower == '-ezTextFontSize'.lower():
+                cmdLineSplitIndex += 1      # point to first argument value
+                ezTextFontSize  = int(thisLine[1])
 
 
             elif thisLine0Lower == '-ezPlotDispGrid'.lower():
@@ -352,6 +360,7 @@ def ezPlotArgumentsCommandLine():
 
     global cmdDirectoryS                    # string            creation
 
+    global ezTextFontSize                   # integer
 
     print()
     print('   ezPlotArgumentsCommandLine ===============')
@@ -408,6 +417,10 @@ def ezPlotArgumentsCommandLine():
                 cmdLineSplitIndex += 1      # point to first argument value
                 ezRAObsName = cmdLineSplit[cmdLineSplitIndex]   # cmd line allows only one ezRAObsName word
 
+            elif cmdLineArgLower == '-ezTextFontSize'.lower():
+                cmdLineSplitIndex += 1      # point to first argument value
+                ezTextFontSize = int(cmdLineSplit[cmdLineSplitIndex])
+            
 
             elif cmdLineArgLower == '-ezPlotDispGrid'.lower():
                 cmdLineSplitIndex += 1      # point to first argument value
@@ -539,6 +552,9 @@ def ezPlotArguments():
     global ezPlot481res                     # integer
     global ezPlotPlotRangeL                 # integer list
 
+    global ezTextFontSize                   # integer
+    global ezTitleFontSize                  # integer
+    global ezAxisFontSize                   # integer
 
     # defaults
     ezRAObsLat  = -999.                 # silly number
@@ -546,6 +562,8 @@ def ezPlotArguments():
     ezRAObsAmsl = -999.                 # silly number
     #ezRAObsName = 'LebanonKS'
     ezRAObsName = ''                    # silly name
+
+    ezTextFontSize = 10
 
     ezPlotDispGrid   = 0
     ezPlot481defDayH = 23.9345          # 23.9345 hours is a sidereal day
@@ -585,6 +603,12 @@ def ezPlotArguments():
     # process arguments from command line
     ezPlotArgumentsCommandLine()
 
+    # Auto size plot
+    if ezTextFontSize < 6:
+      ezTextFontSize = 6
+    ezTitleFontSize = 2 + ezTextFontSize
+    ezAxisFontSize = ezTextFontSize - 2
+
     if not cmdDirectoryS:
         print()
         print()
@@ -623,7 +647,8 @@ def ezPlotArguments():
         #print('   ezPlotAstroMath        =', ezPlotAstroMath)
         #print()
         print('   ezPlotPlotRangeL       =', ezPlotPlotRangeL)
-
+        print()
+        print('   ezTextFontSize =', ezTextFontSize)
 
 
 def readDataDir():
@@ -817,7 +842,8 @@ def openFileStudy():
 
     ## data/rqv8ezb220218_00a.txt
     #                        4321-
-    fileWriteNameStudy = 'ezPlotStudy' + fileNameLast.split(os.path.sep)[-1][:-4] + '.txt'
+    #fileWriteNameStudy = 'ezPlotStudy' + fileNameLast.split(os.path.sep)[-1][:-4] + '.txt'
+    fileWriteNameStudy = fileNameLast.split(os.path.sep)[-1][:-4] + '_ezPlotStudy.log' # Always working filename with subdirectory inside fileNameLast
     print('   opening', fileWriteNameStudy)
 
     # before much calculating, get proof can open output file
@@ -1292,15 +1318,19 @@ def plotEzPlot1dSamplesAnt(plotName, plotData1d, plotXLabel, plotYLimL, plotColo
     global xTickLabelsAnt                       # list          creation?
     global xLabelSAnt                           # string        creation?
 
+    global ezTextFontSize                       # integer
+    global ezTitleFontSize                      # integer
+    global ezAxisFontSize                       # integer
+
     plt.clf()
 
     plt.plot(plotData1d, plotColorS)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezPlotDispGrid)
     
     if plotXLabel:
-        plt.xlabel(plotXLabel)
+        plt.xlabel(plotXLabel, fontsize=ezTextFontSize)
         xTickLocsSorted, xTickLabelsSorted = plt.xticks()
         for i in range(len(xTickLocsSorted) - 1)[::-1]:
             xTickLabelsSorted[i] = f'{int(xTickLocsSorted[i]):,}'
@@ -1309,7 +1339,7 @@ def plotEzPlot1dSamplesAnt(plotName, plotData1d, plotXLabel, plotYLimL, plotColo
             xTickLabelsSorted[-1] = ''
         else:
             xTickLabelsSorted[-1] = f'{antLenM1:,}'
-        plt.xticks(xTickLocsSorted, xTickLabelsSorted, rotation=45, ha='right', rotation_mode='anchor')
+        plt.xticks(xTickLocsSorted, xTickLabelsSorted, rotation=45, ha='right', rotation_mode='anchor', fontsize=ezAxisFontSize)
     else:
         if not len(xTickLocsAnt):
             xTickLocsAnt, xTickLabelsAnt = plt.xticks()
@@ -1335,13 +1365,14 @@ def plotEzPlot1dSamplesAnt(plotName, plotData1d, plotXLabel, plotYLimL, plotColo
                     + Time(ezPlotIn[-1, 0], format='mjd', scale='utc').iso[11:16]
         xLabelSAnt = f'Sample Number (last={antLenM1:,}) with UTC Hour:Min (last=' \
             + Time(ezPlotIn[-1, 0], format='mjd', scale='utc').iso[11:16] + ')'
-        plt.xlabel(xLabelSAnt)
-        plt.xticks(xTickLocsAnt, xTickLabelsAnt, rotation=45, ha='right', rotation_mode='anchor')
+        plt.xlabel(xLabelSAnt, fontsize=ezTextFontSize)
+        plt.xticks(xTickLocsAnt, xTickLabelsAnt, rotation=45, ha='right', rotation_mode='anchor', fontsize=ezAxisFontSize)
     plt.xlim(0, antLenM1)
 
-    plt.ylabel(plotYLabel)
+    plt.ylabel(plotYLabel, fontsize=ezTextFontSize)
     if len(plotYLimL):
         plt.ylim(plotYLimL[0], plotYLimL[1])
+    plt.yticks(fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -1906,6 +1937,10 @@ def plotEzPlot191sigProg():
     global xTickLabelsAnt                       # list          creation?
     global xLabelSAnt                           # string        creation?
 
+    global ezTextFontSize                       # integer
+    global ezTitleFontSize                      # integer
+    global ezAxisFontSize                       # integer
+
     if 191 < ezPlotPlotRangeL[0] or ezPlotPlotRangeL[1] < 191:
         plotCountdown -= 1
         return(1)
@@ -2135,7 +2170,7 @@ def plotEzPlot191sigProg():
     plt.plot(antXTVTMaxGain * (ezPlotIn[:, 19] - antXTVTMaxAvg) + 2000., c='green')
 
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezPlotDispGrid)
 
     if not len(xTickLocsAnt):
@@ -2162,11 +2197,11 @@ def plotEzPlot191sigProg():
                 + Time(ezPlotIn[-1, 0], format='mjd', scale='utc').iso[11:16]
         xLabelSAnt = f'Sample Number (last={antLenM1:,}) with UTC Hour:Min (last=' \
             + Time(ezPlotIn[-1, 0], format='mjd', scale='utc').iso[11:16] + ')'
-    plt.xticks(xTickLocsAnt, xTickLabelsAnt, rotation=45, ha='right', rotation_mode='anchor')
-    plt.xlabel(xLabelSAnt)
+    plt.xticks(xTickLocsAnt, xTickLabelsAnt, rotation=45, ha='right', rotation_mode='anchor', fontsize=ezAxisFontSize)
+    plt.xlabel(xLabelSAnt, fontsize=ezTextFontSize)
     plt.xlim(0, antLenM1)
 
-    plt.ylabel('Signal Computation Progression\nfrom Ant to AntXTVT')
+    plt.ylabel('Signal Computation Progression\nfrom Ant to AntXTVT', fontsize=ezTextFontSize)
     plt.ylim(-150, 2150)
     #      2000., 1800.,    1600., 1400.,
     #     1200.,  1000.,     800.,    600.,       400.,      200.,         0.],
@@ -2174,7 +2209,7 @@ def plotEzPlot191sigProg():
         200.,   400.,     600.,  800.,
         1000.,  1200.,     1400.,   1600.,      1800.,     2000.,        0.],
         ['Ant', 'AntMax', 'Ref', 'RefMax',
-        'AntB', 'AntBMax', 'AntRB', 'AntRBMax', 'AntXTVT', 'AntXTVTMax', 'GLatDeg'])
+        'AntB', 'AntBMax', 'AntRB', 'AntRBMax', 'AntXTVT', 'AntXTVTMax', 'GLatDeg'], fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -2254,6 +2289,10 @@ def plotEzPlot1dSamplesRa(plotName, ezPlotInColumn, plotYLabel):
     global ezPlotInIdxByMjdRel                  # eventually float array
     global colorPenSL                           # list of strings
 
+    global ezTextFontSize                       # integer
+    global ezTitleFontSize                      # integer
+    global ezAxisFontSize                       # integer
+
     plt.clf()
 
     # ezPlotIn[n:] indices sorted by increasing MJD
@@ -2293,15 +2332,16 @@ def plotEzPlot1dSamplesRa(plotName, ezPlotInColumn, plotYLabel):
         for i in range(lastStartIndex, antLen) ], \
         c=colorPenSL[penIndex] )
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezPlotDispGrid)
 
-    plt.xlabel(f'Decreasing Right Ascension (Hours) ({antLen:,} Samples)')
+    plt.xlabel(f'Decreasing Right Ascension (Hours) ({antLen:,} Samples)', fontsize=ezTextFontSize)
     plt.xlim(24.0, 0.0)
-    #plt.xticks([0.0, 6.0, 12.0, 18.0, 23.93], ['0', '6', '12', '18', '23.93'])
-    plt.xticks([0.0, 6.0, 12.0, 18.0, 24.0], ['0', '6', '12', '18', '24'])
+    #plt.xticks([0.0, 6.0, 12.0, 18.0, 23.93], ['0', '6', '12', '18', '23.93'], fontsize=ezAxisFontSize)
+    plt.xticks([0.0, 6.0, 12.0, 18.0, 24.0], ['0', '6', '12', '18', '24'], fontsize=ezAxisFontSize)
 
-    plt.ylabel(plotYLabel)
+    plt.ylabel(plotYLabel, fontsize=ezTextFontSize)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -2508,6 +2548,10 @@ def plotEzPlot1dSamplesUtc(plotName, ezPlotInColumn, plotYLabel):
     global ezPlotInIdxByMjdRel                  # eventually float array
     global colorPenSL                           # list of strings
 
+    global ezTextFontSize                       # integer
+    global ezTitleFontSize                      # integer
+    global ezAxisFontSize                       # integer
+
     plt.clf()
 
     # ezPlotIn[n:] indices sorted by increasing MJD
@@ -2554,14 +2598,15 @@ def plotEzPlot1dSamplesUtc(plotName, ezPlotInColumn, plotYLabel):
         for i in range(lastStartIndex, antLen) ], \
         c=colorPenSL[penIndex] )
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezPlotDispGrid)
 
-    plt.xlabel(f'UTC hours  ({antLen:,} Samples)')
+    plt.xlabel(f'UTC hours  ({antLen:,} Samples)', fontsize=ezTextFontSize)
     plt.xlim(0, 24)
-    plt.xticks([0.0, 6.0, 12.0, 18.0, 24.0], ['0', '6', '12', '18', '24'])
+    plt.xticks([0.0, 6.0, 12.0, 18.0, 24.0], ['0', '6', '12', '18', '24'], fontsize=ezAxisFontSize)
 
-    plt.ylabel(plotYLabel)
+    plt.ylabel(plotYLabel, fontsize=ezTextFontSize)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -2769,6 +2814,10 @@ def plotEzPlot1dSamplesSid(plotName, ezPlotInColumn, plotYLabel):
 
     global colorPenSL                           # list of strings
 
+    global ezTextFontSize                       # integer
+    global ezTitleFontSize                      # integer
+    global ezAxisFontSize                       # integer
+
     plt.clf()
 
     # ezPlotIn[n:] indices sorted by increasing MJD
@@ -2825,14 +2874,15 @@ def plotEzPlot1dSamplesSid(plotName, ezPlotInColumn, plotYLabel):
         for i in range(lastStartIndex, antLen) ], \
         c=colorPenSL[penIndex] )
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezPlotDispGrid)
 
-    plt.xlabel(f'Hours of Sidereal Day  ({antLen:,} Samples)')
+    plt.xlabel(f'Hours of Sidereal Day  ({antLen:,} Samples)', fontsize=ezTextFontSize)
     plt.xlim(0.0, 24.0)
-    plt.xticks([0.0, 6.0, 12.0, 18.0, 23.93], ['0', '6', '12', '18', '23.93'])
+    plt.xticks([0.0, 6.0, 12.0, 18.0, 23.93], ['0', '6', '12', '18', '23.93'], fontsize=ezAxisFontSize)
 
-    plt.ylabel(plotYLabel)
+    plt.ylabel(plotYLabel, fontsize=ezTextFontSize)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -3057,6 +3107,9 @@ def plotEzPlot1dSamplesAvg(plotName, ezPlotInColumn, plotYLabel):
     global ezPlot481defDayH                     # float
     global ezPlot481res                         # integer
 
+    global ezTextFontSize                       # integer
+    global ezTitleFontSize                      # integer
+    global ezAxisFontSize                       # integer
 
     plt.clf()
 
@@ -3157,14 +3210,16 @@ def plotEzPlot1dSamplesAvg(plotName, ezPlotInColumn, plotYLabel):
     #xSnapLast  = int(ezPlot481res * 21 / 24)    #  2pm local MST (14 + 7)
     #plt.plot(np.arange(ezPlot481res + 1)[xSnapStart:xSnapLast] / xSnapsPerHour, ezPlot481value[xSnapStart:xSnapLast], c=colorPenSL[penIndex] )
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezPlotDispGrid)
 
-    plt.xlabel(f'Hours of {ezPlot481defDayH} Hour Day  ({antLen:,} Samples)')
+    plt.xlabel(f'Hours of {ezPlot481defDayH} Hour Day  ({antLen:,} Samples)', fontsize=ezTextFontSize)
     #plt.xlim(0.0, 24.)
-    #plt.xticks([0.0, 6.0, 12.0, 18.0, 24], ['0', '6', '12', '18', '24'])
+    #plt.xticks([0.0, 6.0, 12.0, 18.0, 24], ['0', '6', '12', '18', '24'], fontsize=ezAxisFontSize)
+    plt.xticks(fontsize=ezAxisFontSize)#
 
-    plt.ylabel(plotYLabel)
+    plt.ylabel(plotYLabel, fontsize=ezTextFontSize)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -3183,14 +3238,18 @@ def plotEzPlot1dSamplesSorted(plotName, ezPlotInColumn, plotYLabel):
 
     global ezPlotIn                             # float 2d array
 
+    global ezTextFontSize                       # integer
+    global ezTitleFontSize                      # integer
+    global ezAxisFontSize                       # integer
+
     plt.clf()
 
     plt.plot(np.sort(ezPlotIn[:, ezPlotInColumn]))       # sorted by value
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezPlotDispGrid)
 
-    plt.xlabel(f'{antLen:,} Samples Sorted by Value')
+    plt.xlabel(f'{antLen:,} Samples Sorted by Value', fontsize=ezTextFontSize)
     xTickLocsAnt, xTickLabelsAnt = plt.xticks()
     # may remove silly values, and shorten lists, so best to process indices in decreasing order
     for i in range(len(xTickLocsAnt) - 1)[::-1]:
@@ -3200,10 +3259,11 @@ def plotEzPlot1dSamplesSorted(plotName, ezPlotInColumn, plotYLabel):
         else:       # remove silly values
             xTickLocsAnt = np.delete(xTickLocsAnt, i)
             xTickLabelsAnt = np.delete(xTickLabelsAnt, i)
-    plt.xticks(xTickLocsAnt, xTickLabelsAnt, rotation=45, ha='right', rotation_mode='anchor')
+    plt.xticks(xTickLocsAnt, xTickLabelsAnt, rotation=45, ha='right', rotation_mode='anchor', fontsize=ezAxisFontSize)
     plt.xlim(-antLenM1 * 0.01, antLenM1 * 1.01)
 
-    plt.ylabel(plotYLabel)
+    plt.ylabel(plotYLabel, fontsize=ezTextFontSize)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -3416,17 +3476,21 @@ def plotEzPlot1dSamplesHist(plotName, ezPlotInColumn, plotYLabel):
 
     global ezPlotIn                             # float 2d array
 
+    global ezTextFontSize                       # integer
+    global ezTitleFontSize                      # integer
+    global ezAxisFontSize                       # integer
+
     plt.clf()
 
     plt.hist(ezPlotIn[:, ezPlotInColumn], color = 'blue', edgecolor = 'black', bins = 100)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezPlotDispGrid)
 
-    plt.xlabel(f'Sample Value ({antLen:,} Samples)')
+    plt.xlabel(f'Sample Value ({antLen:,} Samples)', fontsize=ezTextFontSize)
     plt.xlim(0.99 * ezPlotIn[:, ezPlotInColumn].min(), 1.01 * ezPlotIn[:, ezPlotInColumn].max())
 
-    plt.ylabel(plotYLabel)
+    plt.ylabel(plotYLabel, fontsize=ezTextFontSize)
     yTickLocsAnt, yTickLabelsAnt = plt.yticks()
     # may remove silly values, and shorten lists, so best to process indices in decreasing order
     for i in range(len(yTickLocsAnt) - 1)[::-1]:
@@ -3436,7 +3500,7 @@ def plotEzPlot1dSamplesHist(plotName, ezPlotInColumn, plotYLabel):
         else:       # remove silly values
             yTickLocsAnt = np.delete(yTickLocsAnt, i)
             yTickLabelsAnt = np.delete(yTickLabelsAnt, i)
-    plt.yticks(yTickLocsAnt, yTickLabelsAnt)
+    plt.yticks(yTickLocsAnt, yTickLabelsAnt, fontsize=ezAxisFontSize)
     #plt.ylim(-antLenM1 * 0.01, None)
     plt.ylim(-yTickLocsAnt[-1] * 0.01, None)
     
@@ -3760,6 +3824,10 @@ def plotEzPlot1dSamplesCal(plotName, ezPlotInColumn, plotYLabel):
     global calendar366Days                      # eventually float array
     global colorPenSL                           # list of strings
 
+    global ezTextFontSize                       # integer
+    global ezTitleFontSize                      # integer
+    global ezAxisFontSize                       # integer
+
     plt.clf()
 
     # ezPlotIn[n:] indices sorted by increasing MJD
@@ -3840,15 +3908,16 @@ def plotEzPlot1dSamplesCal(plotName, ezPlotInColumn, plotYLabel):
         for i in range(lastStartIndex, antLen) ], \
         c=colorPenSL[penIndex] )
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezPlotDispGrid)
 
-    plt.xlabel(f'Calendar Year (Months) ({antLen:,} Samples)')
+    plt.xlabel(f'Calendar Year (Months) ({antLen:,} Samples)', fontsize=ezTextFontSize)
     plt.xlim(0., 366.)
     plt.xticks([0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335],
-        ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])
+        ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], fontsize=ezAxisFontSize)
 
-    plt.ylabel(plotYLabel)
+    plt.ylabel(plotYLabel, fontsize=ezTextFontSize)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)
@@ -4045,16 +4114,20 @@ def plotEzPlot1dSamplesSlope(plotName, ezPlotInColumn, plotYLabel):
 
     global ezPlotIn                             # float 2d array
 
+    global ezTextFontSize                       # integer
+    global ezTitleFontSize                      # integer
+    global ezAxisFontSize                       # integer
+
     plt.clf()
 
     # find slope to sample value vs time: (this sample value - last sample value) / (this MJD time - last MJD time)
     #plt.plot(np.sort(ezPlotIn[:, ezPlotInColumn]))       # sorted by value
     plt.plot((ezPlotIn[1:, ezPlotInColumn] - ezPlotIn[:-1, ezPlotInColumn]) / (ezPlotIn[1:, 0] - ezPlotIn[:-1, 0]))
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezPlotDispGrid)
 
-    plt.xlabel(f'{antLen:,} Samples')
+    plt.xlabel(f'{antLen:,} Samples', fontsize=ezTextFontSize)
     xTickLocsAnt, xTickLabelsAnt = plt.xticks()
     # may remove silly values, and shorten lists, so best to process indices in decreasing order
     for i in range(len(xTickLocsAnt) - 1)[::-1]:
@@ -4064,10 +4137,11 @@ def plotEzPlot1dSamplesSlope(plotName, ezPlotInColumn, plotYLabel):
         else:       # remove silly values
             xTickLocsAnt = np.delete(xTickLocsAnt, i)
             xTickLabelsAnt = np.delete(xTickLabelsAnt, i)
-    plt.xticks(xTickLocsAnt, xTickLabelsAnt, rotation=45, ha='right', rotation_mode='anchor')
+    plt.xticks(xTickLocsAnt, xTickLabelsAnt, rotation=45, ha='right', rotation_mode='anchor', fontsize=ezAxisFontSize)
     plt.xlim(1, antLenM1)
 
-    plt.ylabel(plotYLabel)
+    plt.ylabel(plotYLabel, fontsize=ezTextFontSize)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     if os.path.exists(plotName):    # to force plot file date update, if file exists, delete it
         os.remove(plotName)

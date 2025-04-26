@@ -225,6 +225,7 @@ def printUsage():
     print()
     print('    -ezGal61XGain           150     (maximum height in ezGal61XgLonSpectraCascade plots)')
     print()
+    print('    -ezTextFontSize          10     (Size of text font)')
     print('    -ezGalPlotRangeL     0  500     (save only this range of ezGal plots to file, to save time)')
     print('    -ezGalDispGrid          1       (turn on graphical display plot grids)')
     print()
@@ -280,6 +281,7 @@ def ezGalArgumentsFile(ezDefaultsFileNameInput):
 
     global ezRAObsName                      # string
     global ezColorMap                       # string
+    global ezTextFontSize                   # integer
 
     global ezGalDispGrid                    # integer
 
@@ -330,6 +332,9 @@ def ezGalArgumentsFile(ezDefaultsFileNameInput):
                 ezColorMap = thisLine[1]
 
             # integer arguments:
+            elif thisLine0Lower == '-ezTextFontSize'.lower():
+                ezTextFontSize = int(thisLine[1])
+
             elif thisLine0Lower == '-ezGal510Csv'.lower():
                 ezGal510Csv = int(thisLine[1])
 
@@ -405,6 +410,7 @@ def ezGalArgumentsCommandLine():
 
     global ezRAObsName                      # string
     global ezColorMap                       # string
+    global ezTextFontSize                   # integer
 
     global ezGal510Csv                      # integer
     global ezGal540edgesUFile               # string
@@ -473,6 +479,9 @@ def ezGalArgumentsCommandLine():
                 ezColorMap = cmdLineSplit[cmdLineSplitIndex]   # cmd line allows only one word
 
             # integer arguments:
+            elif cmdLineArgLower == 'ezTextFontSize'.lower():
+                ezTextFontSize = int(cmdLineSplit[cmdLineSplitIndex])
+
             elif cmdLineArgLower == 'ezGal510Csv'.lower():
                 ezGal510Csv = int(cmdLineSplit[cmdLineSplitIndex])
 
@@ -548,6 +557,10 @@ def ezGalArguments():
 
     global ezRAObsName                      # string
     global ezColorMap                       # string
+    global ezTextFontSize                   # integer
+    global ezTitleFontSize                  # integer
+    global ezAxisFontSize                   # integer
+    global ezHBarFontSize                   # integer
 
     global ezGal510Csv                      # integer
     global ezGal540edgesUFile               # string
@@ -565,6 +578,7 @@ def ezGalArguments():
     #ezRAObsName = 'defaultKS'
     ezRAObsName = ''                # overwritten by optional argument
     ezColorMap = 'gnuplot'          # default color map
+    ezTextFontSize = 10
 
     ezGal510Csv = 0                 # to disable
     ezGal540edgesUFile = ''
@@ -586,6 +600,13 @@ def ezGalArguments():
 
     ezGalArgumentsCommandLine()             # process arguments from command line
     
+    # Auto size plot
+    if ezTextFontSize < 6:
+      ezTextFontSize = 6
+    ezTitleFontSize = 2 + ezTextFontSize
+    ezAxisFontSize = ezTextFontSize - 2
+    ezHBarFontSize = ezTextFontSize - 4
+
     ezGalVelGLonEdgeLevelL[1] = int(ezGalVelGLonEdgeLevelL[1])
     ezGalVelGLonEdgeLevelL[2] = int(ezGalVelGLonEdgeLevelL[2])
 
@@ -593,6 +614,7 @@ def ezGalArguments():
     print()
     print('   ezRAObsName =', ezRAObsName)
     print('   ezColorMap =', ezColorMap)
+    print('   ezTextFontSize =', ezTextFontSize)
     print()
     print('   ezGal510Csv =', ezGal510Csv)
     print('   ezGal540edgesUFile =', ezGal540edgesUFile)
@@ -847,6 +869,10 @@ def plotEzGal510velGLon():
 
     global ezColorMap               # string
 
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+
     plotCountdown -= 1
 
     # if anything in velGLonP180 to save or plot
@@ -904,27 +930,29 @@ def plotEzGal510velGLon():
         plt.axvline(x = -90, linewidth=0.5, color=gridColor)
 
         cbar = plt.colorbar(pts, orientation='vertical', pad=0.06)
+        cbar.ax.tick_params(labelsize=ezHBarFontSize)
 
-        plt.title(titleS)
+        plt.title(titleS, fontsize=ezTitleFontSize)
         #plt.grid(ezGalDispGrid)
         plt.grid(0)
 
-        plt.xlabel('Galactic Longitude (degrees)')
+        plt.xlabel('Galactic Longitude (degrees)', fontsize=ezTextFontSize)
         plt.xlim(180, -180)        # in degrees
         plt.xticks([ 180,   90,   0,   -90,   -180],
-                   ['180', '90', '0', '-90', '-180'])
+                   ['180', '90', '0', '-90', '-180'], fontsize=ezAxisFontSize)
 
         plt.ylim(-velocitySpanMax, velocitySpanMax)        # in velocity
+        plt.yticks(fontsize=ezAxisFontSize)
 
         #    plt.ylabel('Interpolated Velocity (km/s) by Galactic Longitude' \
         #        + f'\n\nVelocity Count Sum = {velGLonP180CountSum}' \
         #        + f'\n\nVelocity Count Nonzero = {velGLonP180CountNonzero}' \
         #        + f' of {len(velGLonP180Count)}',
-        #        rotation=90, verticalalignment='bottom')
+        #        rotation=90, verticalalignment='bottom', fontsize=ezTextFontSize)
         plt.ylabel('Interpolated Velocity (km/s) by Galactic Longitude' \
             + f'\nVelocity Count: Sum={velGLonP180CountSum:,}'
             + f' Nonzero={velGLonP180CountNonzero} of {len(velGLonP180Count)}',
-            rotation=90, verticalalignment='bottom')
+            rotation=90, verticalalignment='bottom', fontsize=ezTextFontSize)
 
         if os.path.exists(pltNameS):    # to force plot file date update, if file exists, delete it
             os.remove(pltNameS)
@@ -1012,6 +1040,10 @@ def plotEzGal519velGLonCount():
     #global ezGalDispGrid            # integer
     global ezGalPlotRangeL          # integer list
 
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+
     plotCountdown -= 1
 
     # if anything in velGLonP180 to plot
@@ -1024,14 +1056,14 @@ def plotEzGal519velGLonCount():
         plt.clf()
         plt.plot(np.arange(-180, +181, 1), velGLonP180Count)
 
-        plt.title(titleS)
+        plt.title(titleS, fontsize=ezTitleFontSize)
         #plt.grid(ezGalDispGrid)
         plt.grid(0)
 
-        plt.xlabel('Galactic Longitude (degrees)')
+        plt.xlabel('Galactic Longitude (degrees)', fontsize=ezTextFontSize)
         plt.xlim(182, -182)        # in degrees
         plt.xticks([ 180,   90,   0,   -90,   -180],
-                   ['180', '90', '0', '-90', '-180'])
+                   ['180', '90', '0', '-90', '-180'], fontsize=ezAxisFontSize)
 
         # if any Galactic plane crossings, velGLonP180 has been (partially?) filled with averages
         velGLonP180CountNonzero = np.count_nonzero(velGLonP180Count)
@@ -1040,8 +1072,9 @@ def plotEzGal519velGLonCount():
 
         plt.ylabel('Velocity Data Counts by Galactic Longitude' \
             + f'\nVelocity Count: Sum={velGLonP180CountSum:,}' \
-            + f' Nonzero = {velGLonP180CountNonzero} of {len(velGLonP180Count)}')
+            + f' Nonzero = {velGLonP180CountNonzero} of {len(velGLonP180Count)}', fontsize=ezTextFontSize)
         #    rotation=90, verticalalignment='bottom')
+        plt.yticks(fontsize=ezAxisFontSize)
 
         if os.path.exists(pltNameS):    # to force plot file date update, if file exists, delete it
             os.remove(pltNameS)
@@ -1131,6 +1164,10 @@ def plotEzGal516velGLonAvg():
     #global ezGalDispGrid            # integer
     global ezGalPlotRangeL          # integer list
 
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+
     plotCountdown -= 1
 
     # if anything in velGLonP180 to plot
@@ -1148,14 +1185,14 @@ def plotEzGal516velGLonAvg():
         # velocity = (fileFreqBin doppler MHz) * 211.061103656 = km/s
         plt.plot(np.arange(-180, +181, 1), np.mean(velGLonP180, axis=0) * 211.061103656)
 
-        plt.title(titleS)
+        plt.title(titleS, fontsize=ezTitleFontSize)
         #plt.grid(ezGalDispGrid)
         plt.grid(0)
 
-        plt.xlabel('Galactic Longitude (degrees)')
+        plt.xlabel('Galactic Longitude (degrees)', fontsize=ezTextFontSize)
         plt.xlim(182, -182)        # in degrees
         plt.xticks([ 180,   90,   0,   -90,   -180],
-                   ['180', '90', '0', '-90', '-180'])
+                   ['180', '90', '0', '-90', '-180'], fontsize=ezAxisFontSize)
 
         # if any Galactic plane crossings, velGLonP180 has been (partially?) filled with averages
         velGLonP180CountNonzero = np.count_nonzero(velGLonP180Count)
@@ -1163,8 +1200,9 @@ def plotEzGal516velGLonAvg():
 
         plt.ylabel('Average Velocity (km/s) by Galactic Longitude' \
             + f'\nVelocity Count: Sum={velGLonP180CountSum:,}' \
-            + f' Nonzero = {velGLonP180CountNonzero} of {len(velGLonP180Count)}')
+            + f' Nonzero = {velGLonP180CountNonzero} of {len(velGLonP180Count)}', fontsize=ezTextFontSize)
         #    rotation=90, verticalalignment='bottom')
+        plt.yticks(fontsize=ezAxisFontSize)
 
         if os.path.exists(pltNameS):    # to force plot file date update, if file exists, delete it
             os.remove(pltNameS)
@@ -1184,6 +1222,10 @@ def plotEzGal517velGLonMax():
     #global ezGalDispGrid            # integer
     global ezGalPlotRangeL          # integer list
 
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+
     plotCountdown -= 1
 
     # if anything in velGLonP180 to plot
@@ -1201,14 +1243,14 @@ def plotEzGal517velGLonMax():
         # velocity = (fileFreqBin doppler MHz) * 211.061103656 = km/s
         plt.plot(np.arange(-180, +181, 1), np.amax(velGLonP180, axis=0) * 211.061103656)
 
-        plt.title(titleS)
+        plt.title(titleS, fontsize=ezTitleFontSize)
         #plt.grid(ezGalDispGrid)
         plt.grid(0)
 
-        plt.xlabel('Galactic Longitude (degrees)')
+        plt.xlabel('Galactic Longitude (degrees)', fontsize=ezTextFontSize)
         plt.xlim(182, -182)        # in degrees
         plt.xticks([ 180,   90,   0,   -90,   -180],
-                   ['180', '90', '0', '-90', '-180'])
+                   ['180', '90', '0', '-90', '-180'], fontsize=ezAxisFontSize)
 
         # if any Galactic plane crossings, velGLonP180 has been (partially?) filled with averages
         velGLonP180CountNonzero = np.count_nonzero(velGLonP180Count)
@@ -1216,8 +1258,9 @@ def plotEzGal517velGLonMax():
 
         plt.ylabel('Maximum Velocity (km/s) by Galactic Longitude' \
             + f'\nVelocity Count: Sum={velGLonP180CountSum:,}' \
-            + f' Nonzero = {velGLonP180CountNonzero} of {len(velGLonP180Count)}')
+            + f' Nonzero = {velGLonP180CountNonzero} of {len(velGLonP180Count)}', fontsize=ezTextFontSize)
         #    rotation=90, verticalalignment='bottom')
+        plt.yticks(fontsize=ezAxisFontSize)
 
         if os.path.exists(pltNameS):    # to force plot file date update, if file exists, delete it
             os.remove(pltNameS)
@@ -1238,6 +1281,10 @@ def plotEzGal520velGLonPolarI():
     global ezGalPlotRangeL          # integer list
 
     global ezColorMap               # string
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     plotCountdown -= 1
 
@@ -1260,30 +1307,31 @@ def plotEzGal520velGLonPolarI():
         plt.grid(0)
         im = plt.pcolormesh(theta, r, velGLonP180.T, cmap=plt.get_cmap(ezColorMap), shading='auto')
 
-        fig.colorbar(im, ax=ax, pad=0.1)
+        cbar = fig.colorbar(im, ax=ax, pad=0.1)
+        cbar.ax.tick_params(labelsize=ezHBarFontSize)
 
         polarPlot = plt.plot(azm, r, color='black', linestyle='none')
         plt.grid(1)
 
-        plt.title(titleS)
+        plt.title(titleS, fontsize=ezTitleFontSize)
 
         ax.set_rgrids((fileFreqBinQty/2.,), ('',))
         ax.set_theta_zero_location('S', offset=0.)
-        ax.set_thetagrids((90, 180, 270, 360), ('-90', '0', '90', '180 and -180'))
+        ax.set_thetagrids((90, 180, 270, 360), ('-90', '0', '90', '180 and -180'), fontsize=ezAxisFontSize)
 
         radiusTextQuadrant = fileFreqBinQty * 1.1
-        ax.text(-2.55, radiusTextQuadrant, 'Quadrant 1', color='red', horizontalalignment='right')
-        ax.text(-0.6,  radiusTextQuadrant, 'Quadrant 2', color='red', horizontalalignment='right')
-        ax.text( 0.6,  radiusTextQuadrant, 'Quadrant 3', color='red')
-        ax.text( 2.55, radiusTextQuadrant, 'Quadrant 4', color='red')
-        ax.text(-3.05, radiusTextQuadrant*0.95, 'Toward', color='blue', horizontalalignment='right')
-        ax.text( 3.05, radiusTextQuadrant*0.95, 'Galactic Center', color='blue')
-        ax.text(-2.2, radiusTextQuadrant*0.95, 'Sun at\nCenter', color='blue', horizontalalignment='right')
+        ax.text(-2.55, radiusTextQuadrant, 'Quadrant 1', color='red', horizontalalignment='right', fontsize=ezTextFontSize)
+        ax.text(-0.6,  radiusTextQuadrant, 'Quadrant 2', color='red', horizontalalignment='right', fontsize=ezTextFontSize)
+        ax.text( 0.6,  radiusTextQuadrant, 'Quadrant 3', color='red', fontsize=ezTextFontSize)
+        ax.text( 2.55, radiusTextQuadrant, 'Quadrant 4', color='red', fontsize=ezTextFontSize)
+        ax.text(-3.05, radiusTextQuadrant*0.95, 'Toward', color='blue', horizontalalignment='right', fontsize=ezTextFontSize)
+        ax.text( 3.05, radiusTextQuadrant*0.95, 'Galactic Center', color='blue', fontsize=ezTextFontSize)
+        ax.text(-2.2, radiusTextQuadrant*0.95, 'Sun at\nCenter', color='blue', horizontalalignment='right', fontsize=ezTextFontSize)
 
-        ax.set_xlabel('Galactic Longitude (degrees) of Spectra')
+        ax.set_xlabel('Galactic Longitude (degrees) of Spectra', fontsize=ezTextFontSize)
         ax.set_ylabel('Increasing Radius Is Increasing "Velocity",\n\n' \
             + 'Increasing Radius Is Increasing Receding,\n\n' \
-            + 'Increasing Radius Is Decreasing Doppler Frequency\n\n')
+            + 'Increasing Radius Is Decreasing Doppler Frequency\n\n', fontsize=ezTextFontSize)
 
         if os.path.exists(pltNameS):    # to force plot file date update, if file exists, delete it
             os.remove(pltNameS)
@@ -1304,6 +1352,10 @@ def plotEzGal521velGLonPolarD():
     global ezGalPlotRangeL          # integer list
 
     global ezColorMap               # string
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     plotCountdown -= 1
 
@@ -1326,30 +1378,31 @@ def plotEzGal521velGLonPolarD():
         plt.grid(0)
         im = plt.pcolormesh(theta, r, velGLonP180[::-1].T, cmap=plt.get_cmap(ezColorMap), shading='auto')
 
-        fig.colorbar(im, ax=ax, pad=0.1)
+        cbar = fig.colorbar(im, ax=ax, pad=0.1)
+        cbar.ax.tick_params(labelsize=ezHBarFontSize)
 
         polarPlot = plt.plot(azm, r, color='black', linestyle='none')
         plt.grid(1)
 
-        plt.title(titleS)
+        plt.title(titleS, fontsize=ezTitleFontSize)
 
         ax.set_rgrids((fileFreqBinQty/2.,), ('',))
         ax.set_theta_zero_location('S', offset=0.)
-        ax.set_thetagrids((90, 180, 270, 360), ('-90', '0', '90', '180 and -180'))
+        ax.set_thetagrids((90, 180, 270, 360), ('-90', '0', '90', '180 and -180'), fontsize=ezAxisFontSize)
 
         radiusTextQuadrant = fileFreqBinQty * 1.1
-        ax.text(-2.55, radiusTextQuadrant, 'Quadrant 1', color='red', horizontalalignment='right')
-        ax.text(-0.6,  radiusTextQuadrant, 'Quadrant 2', color='red', horizontalalignment='right')
-        ax.text( 0.6,  radiusTextQuadrant, 'Quadrant 3', color='red')
-        ax.text( 2.55, radiusTextQuadrant, 'Quadrant 4', color='red')
-        ax.text(-3.05, radiusTextQuadrant*0.95, 'Toward', color='blue', horizontalalignment='right')
-        ax.text( 3.05, radiusTextQuadrant*0.95, 'Galactic Center', color='blue')
-        ax.text(-2.2, radiusTextQuadrant*0.95, 'Sun at\nCenter', color='blue', horizontalalignment='right')
+        ax.text(-2.55, radiusTextQuadrant, 'Quadrant 1', color='red', horizontalalignment='right', fontsize=ezTextFontSize)
+        ax.text(-0.6,  radiusTextQuadrant, 'Quadrant 2', color='red', horizontalalignment='right', fontsize=ezTextFontSize)
+        ax.text( 0.6,  radiusTextQuadrant, 'Quadrant 3', color='red', fontsize=ezTextFontSize)
+        ax.text( 2.55, radiusTextQuadrant, 'Quadrant 4', color='red', fontsize=ezTextFontSize)
+        ax.text(-3.05, radiusTextQuadrant*0.95, 'Toward', color='blue', horizontalalignment='right', fontsize=ezTextFontSize)
+        ax.text( 3.05, radiusTextQuadrant*0.95, 'Galactic Center', color='blue', fontsize=ezTextFontSize)
+        ax.text(-2.2, radiusTextQuadrant*0.95, 'Sun at\nCenter', color='blue', horizontalalignment='right', fontsize=ezTextFontSize)
 
-        ax.set_xlabel('Galactic Longitude (degrees) of Spectra')
+        ax.set_xlabel('Galactic Longitude (degrees) of Spectra', fontsize=ezTextFontSize)
         ax.set_ylabel('Decreasing Radius Is Increasing "Velocity",\n\n' \
             + 'Decreasing Radius Is Increasing Receding,\n\n' \
-            + 'Decreasing Radius Is Decreasing Doppler Frequency\n\n')
+            + 'Decreasing Radius Is Decreasing Doppler Frequency\n\n', fontsize=ezTextFontSize)
 
         if os.path.exists(pltNameS):    # to force plot file date update, if file exists, delete it
             os.remove(pltNameS)
@@ -1369,6 +1422,10 @@ def plotEzGal529velGLonPolarCount():
     global ezGalPlotRangeL          # integer list
 
     global ezColorMap               # string
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     plotCountdown -= 1
 
@@ -1396,30 +1453,31 @@ def plotEzGal529velGLonPolarCount():
         plt.grid(0)
         im = plt.pcolormesh(theta, r, velGLonP180CountPolar, cmap=plt.get_cmap(ezColorMap), shading='auto')
 
-        fig.colorbar(im, ax=ax, pad=0.1)
+        cbar = fig.colorbar(im, ax=ax, pad=0.1)
+        cbar.ax.tick_params(labelsize=ezHBarFontSize)
 
         polarPlot = plt.plot(azm, r, color='black', linestyle='none')
         plt.grid(1)
 
-        plt.title(titleS)
+        plt.title(titleS, fontsize=ezTitleFontSize)
 
         ax.set_rgrids((fileFreqBinQty,), ('',))
         ax.set_theta_zero_location('S', offset=0.)
-        ax.set_thetagrids((90, 180, 270, 360), ('-90', '0', '90', '180 and -180'))
+        ax.set_thetagrids((90, 180, 270, 360), ('-90', '0', '90', '180 and -180'), fontsize=ezAxisFontSize)
 
         radiusTextQuadrant = fileFreqBinQty * 1.1
-        ax.text(-2.55, radiusTextQuadrant, 'Quadrant 1', color='red', horizontalalignment='right')
-        ax.text(-0.6,  radiusTextQuadrant, 'Quadrant 2', color='red', horizontalalignment='right')
-        ax.text( 0.6,  radiusTextQuadrant, 'Quadrant 3', color='red')
-        ax.text( 2.55, radiusTextQuadrant, 'Quadrant 4', color='red')
-        ax.text(-3.05, radiusTextQuadrant*0.95, 'Toward', color='blue', horizontalalignment='right')
-        ax.text( 3.05, radiusTextQuadrant*0.95, 'Galactic Center', color='blue')
+        ax.text(-2.55, radiusTextQuadrant, 'Quadrant 1', color='red', horizontalalignment='right', fontsize=ezTextFontSize)
+        ax.text(-0.6,  radiusTextQuadrant, 'Quadrant 2', color='red', horizontalalignment='right', fontsize=ezTextFontSize)
+        ax.text( 0.6,  radiusTextQuadrant, 'Quadrant 3', color='red', fontsize=ezTextFontSize)
+        ax.text( 2.55, radiusTextQuadrant, 'Quadrant 4', color='red', fontsize=ezTextFontSize)
+        ax.text(-3.05, radiusTextQuadrant*0.95, 'Toward', color='blue', horizontalalignment='right', fontsize=ezTextFontSize)
+        ax.text( 3.05, radiusTextQuadrant*0.95, 'Galactic Center', color='blue', fontsize=ezTextFontSize)
 
-        ax.set_xlabel('Galactic Longitude (degrees) of Spectra')
+        ax.set_xlabel('Galactic Longitude (degrees) of Spectra', fontsize=ezTextFontSize)
         ax.set_ylabel('Velocity Data Counts by Galactic Longitude' \
             + f'\n\nVelocity Count Sum = {velGLonP180CountSum:,}' \
             + f'\n\nVelocity Count Nonzero = {np.count_nonzero(velGLonP180Count)}' \
-            + f' of {len(velGLonP180Count)}\n\n')
+            + f' of {len(velGLonP180Count)}\n\n', fontsize=ezTextFontSize)
 
         if os.path.exists(pltNameS):    # to force plot file date update, if file exists, delete it
             os.remove(pltNameS)
@@ -1440,6 +1498,10 @@ def plotEzGal530galDecGLon():
     global ezGalPlotRangeL          # integer list
 
     global ezColorMap               # string
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     plotCountdown -= 1
 
@@ -1482,22 +1544,23 @@ def plotEzGal530galDecGLon():
         plt.axvline(x = -90, linewidth=0.5, color=gridColor)
 
         cbar = plt.colorbar(pts, orientation='vertical', pad=0.06)
+        cbar.ax.tick_params(labelsize=ezHBarFontSize)
 
-        plt.title(titleS)
+        plt.title(titleS, fontsize=ezTitleFontSize)
         #plt.grid(ezGalDispGrid)
         plt.grid(0)
 
-        plt.xlabel('Galactic Longitude (degrees)')
+        plt.xlabel('Galactic Longitude (degrees)', fontsize=ezTextFontSize)
         plt.xlim(180, -180)        # in degrees
         plt.xticks([180,   90,   0,   -90,   -180],
-                   ['180', '90', '0', '-90', '-180'])
+                   ['180', '90', '0', '-90', '-180'], fontsize=ezAxisFontSize)
 
         plt.ylabel('Velocity Counts on Declination by Galactic Longitude' \
-            + f'\nVelocity Count Sum = {velGLonP180CountSum:,}')
+            + f'\nVelocity Count Sum = {velGLonP180CountSum:,}', fontsize=ezTextFontSize)
         #    rotation=90, verticalalignment='bottom')
         plt.ylim(0, 180)                # in decP90
         plt.yticks([0,     30,    60,    90,  120,  150,  180],
-                   ['-90', '-60', '-30', '0', '30', '60', '90'])
+                   ['-90', '-60', '-30', '0', '30', '60', '90'], fontsize=ezAxisFontSize)
 
         if os.path.exists(pltNameS):    # to force plot file date update, if file exists, delete it
             os.remove(pltNameS)
@@ -1527,6 +1590,10 @@ def findVelGLonEdges():
     global ezGalVelGLonEdgeLevelL           # float list
     global velGLonUEdge             # float array
     global velGLonLEdge             # float array
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     # read or calculate velGLonUEdge and velGLonLEdge, needed later for
     #   plotEzGal540velGLonEdgesB()
@@ -1794,6 +1861,10 @@ def plotEzGal540velGLonEdgesB():
 
     global ezColorMap               # string
 
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+
     plotCountdown -= 1
 
     # if not wanted, or nothing in velGLonP180 to save or plot
@@ -1843,17 +1914,19 @@ def plotEzGal540velGLonEdgesB():
     plt.axvline(x = -90, linewidth=0.5, color=gridColor)
 
     cbar = plt.colorbar(pts, orientation='vertical', pad=0.06)
+    cbar.ax.tick_params(labelsize=ezHBarFontSize)
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     #plt.grid(ezGalDispGrid)
     plt.grid(0)
 
-    plt.xlabel('Galactic Longitude (degrees)')
+    plt.xlabel('Galactic Longitude (degrees)', fontsize=ezTextFontSize)
     plt.xlim(180, -180)        # in degrees
     plt.xticks([ 180,   90,   0,   -90,   -180],
-               ['180', '90', '0', '-90', '-180'])
+               ['180', '90', '0', '-90', '-180'], fontsize=ezAxisFontSize)
 
     plt.ylim(-velocitySpanMax, velocitySpanMax)        # in velocity
+    plt.yticks(fontsize=ezAxisFontSize)
 
     # all used velGLonUEdge are red  shifted
     plt.plot(np.arange(-180, +181, 1), velGLonUEdge, 'r.')
@@ -1861,18 +1934,18 @@ def plotEzGal540velGLonEdgesB():
     # all used velGLonLEdge are blue shifted
     plt.plot(np.arange(-180, +181, 1), velGLonLEdge, 'b.')
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     #plt.grid(ezGalDispGrid)
     plt.grid(0)
 
-    plt.xlabel('Galactic Longitude (degrees)')
+    plt.xlabel('Galactic Longitude (degrees)', fontsize=ezTextFontSize)
     plt.xlim(180, -180)        # in degrees
     plt.xticks([ 180,   90,   0,   -90,   -180],
-               ['180', '90', '0', '-90', '-180'])
+               ['180', '90', '0', '-90', '-180'], fontsize=ezAxisFontSize)
 
     ylabelS = 'Velocity Edges: Upper (Red) and Lower (Blue) (km/s)\n'
     ylabelS += f'ezGalVelGLonEdgeLevelL = {ezGalVelGLonEdgeLevelL[0]:0.3f}  {ezGalVelGLonEdgeLevelL[1]:d}  {ezGalVelGLonEdgeLevelL[2]:d}'
-    plt.ylabel(ylabelS)
+    plt.ylabel(ylabelS, fontsize=ezTextFontSize)
 
     velGLonUEdgeQ1Max = np.nanmax(velGLonUEdge[180:271])
     print('                         velGLonUEdgeQ1Max =', velGLonUEdgeQ1Max, 'at glon =',
@@ -1899,6 +1972,10 @@ def plotEzGal541velGLonEdges():
     global ezGalDispGrid            # integer
     global fileFreqBinQty           # integer
     global ezGalPlotRangeL          # integer list
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     plotCountdown -= 1
 
@@ -1927,19 +2004,20 @@ def plotEzGal541velGLonEdges():
     plt.plot(np.arange(-180, +181, 1), velGLonLEdge, 'b.')
 
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     #plt.grid(ezGalDispGrid)
     plt.grid(0)
 
-    plt.xlabel('Galactic Longitude (degrees)')
+    plt.xlabel('Galactic Longitude (degrees)', fontsize=ezTextFontSize)
     plt.xlim(180, -180)        # in degrees
     plt.xticks([ 180,   90,   0,   -90,   -180],
-               ['180', '90', '0', '-90', '-180'])
+               ['180', '90', '0', '-90', '-180'], fontsize=ezAxisFontSize)
 
     ylabelS = 'Velocity Upper Edge (Red) and Lower Edge (Blue)  (km/s)\n'
     ylabelS += f'ezGalVelGLonEdgeLevelL = {ezGalVelGLonEdgeLevelL[0]:0.3f}  {ezGalVelGLonEdgeLevelL[1]:d}  {ezGalVelGLonEdgeLevelL[2]:d}'
-    plt.ylabel(ylabelS)
+    plt.ylabel(ylabelS, fontsize=ezTextFontSize)
     plt.ylim(-270, 270)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     velGLonUEdgeQ1Max = np.nanmax(velGLonUEdge[180:271])
     print('                         velGLonUEdgeQ1Max =', velGLonUEdgeQ1Max, 'at glon =',
@@ -1961,6 +2039,10 @@ def plotEzGal550galRot():
     global titleS                   # string
     global ezGalDispGrid            # integer
     global ezGalPlotRangeL          # integer list
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     plotCountdown -= 1
 
@@ -2009,25 +2091,27 @@ def plotEzGal550galRot():
     #plt.plot(galGasRadiusLy, galGasVelMaxKm, 'g.')
     plt.plot(galGasRadiusKpc, galGasVelMaxKm, 'g.')
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezGalDispGrid)
-    #plt.xlabel('Gas Radius from Galactic Center (Light Years)  (Sun = 26,000 ly)')
-    plt.xlabel('Gas Radius from Galactic Center (kiloparsecs)  (Sun = 8 kpc)')
+    #plt.xlabel('Gas Radius from Galactic Center (Light Years)  (Sun = 26,000 ly)', fontsize=ezTextFontSize)
+    plt.xlabel('Gas Radius from Galactic Center (kiloparsecs)  (Sun = 8 kpc)', fontsize=ezTextFontSize)
     #plt.xlim(0, 26000)        # radius from 0 to Solar radius from Galactic center (=26000 light years)
     #plt.xticks([0,   5000.,   10000.,   15000.,   20000.,   25000.],
-    #           ['0', '5,000', '10,000', '15,000', '20,000', '25,000'])
+    #           ['0', '5,000', '10,000', '15,000', '20,000', '25,000'], fontsize=ezAxisFontSize)
     plt.xlim(-0.2, 8.5)
+    plt.xticks(fontsize=ezAxisFontSize)
 
     ylabelS = 'Gas Max Velocity around Galactic Center (km/s)\n'
     ylabelS += f'ezGalVelGLonEdgeLevelL = {ezGalVelGLonEdgeLevelL[0]:0.3f}  {ezGalVelGLonEdgeLevelL[1]:d}  {ezGalVelGLonEdgeLevelL[2]:d}'
-    plt.ylabel(ylabelS)
+    plt.ylabel(ylabelS, fontsize=ezTextFontSize)
 
     ax = plt.gca()
     #ax.text(0.95, 0.05, '( wikipedia.org/wiki/Sun says "about 220 km/s" )', horizontalalignment='right', transform=ax.transAxes)
-    ax.text(0.02, 0.95, '( wikipedia.org/wiki/Sun says "about 220 km/s" )', transform=ax.transAxes)
+    ax.text(0.02, 0.95, '( wikipedia.org/wiki/Sun says "about 220 km/s" )', transform=ax.transAxes, fontsize=ezAxisFontSize)
 
     galGasVelMaxKmQ1Max = np.nanmax(galGasVelMaxKm)
     plt.ylim(0, 1.1*galGasVelMaxKmQ1Max)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     velGLonUEdgeQ1Max = np.nanmax(velGLonUEdge[180:271])
     print('                         velGLonUEdgeQ1Max =', velGLonUEdgeQ1Max, 'at glon =',
@@ -2035,8 +2119,8 @@ def plotEzGal550galRot():
 
     print('                         galGasVelMaxKmQ1Max =', galGasVelMaxKmQ1Max, 'at glon =',
         np.where(galGasVelMaxKm == galGasVelMaxKmQ1Max)[0][0])     # use first element of list
-    #ax.text(0.95, 0.12, f'Max = {int(galGasVelMaxKmQ1Max):d}', horizontalalignment='right', transform=ax.transAxes)
-    ax.text(0.02, 0.89, f'maximum = {int(galGasVelMaxKmQ1Max):d} = {int(100.*galGasVelMaxKmQ1Max/220):d}%', transform=ax.transAxes)
+    #ax.text(0.95, 0.12, f'Max = {int(galGasVelMaxKmQ1Max):d}', horizontalalignment='right', transform=ax.transAxes, fontsize=ezTextFontSize)
+    ax.text(0.02, 0.89, f'maximum = {int(galGasVelMaxKmQ1Max):d} = {int(100.*galGasVelMaxKmQ1Max/220):d}%', transform=ax.transAxes, color='green', fontsize=ezTextFontSize)
     # 230509: LTO15 (-ezGalVelGLonEdgeLevelL 1.05 30 160) sees galGasVelMaxKmQ1Max as 224
     #   wikipedia.org/wiki/Sun says "about 220 km/s"
     #   https://astronomy.stackexchange.com/questions/47521/how-was-the-speed-of-the-sun-around-the-milky-way-galaxy-calculated
@@ -2064,6 +2148,10 @@ def plotEzGal551galRot2():
     global titleS                   # string
     global ezGalDispGrid            # integer
     global ezGalPlotRangeL          # integer list
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     plotCountdown -= 1
 
@@ -2108,16 +2196,18 @@ def plotEzGal551galRot2():
     galGasRadiusLKm = (26000. * 9.46e12) * 220. * np.sin(np.radians(np.arange(91))) \
         / 220. * np.sin(np.radians(np.arange(91))) + galGasVelMaxLKm             # in km
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezGalDispGrid)
-    plt.xlabel('Gas Radius from Galactic Center (Light Years)  (Sun = 26,000 ly)')
+    plt.xlabel('Gas Radius from Galactic Center (Light Years)  (Sun = 26,000 ly)', fontsize=ezTextFontSize)
     ##########plt.xlim(0, 26000)        # radius from 0 to Solar radius from Galactic center (=26000 light years)
     ##########plt.xticks([0,   5000.,   10000.,   15000.,   20000.,   25000.],
-    ##########           ['0', '5,000', '10,000', '15,000', '20,000', '25,000'])
+    ##########           ['0', '5,000', '10,000', '15,000', '20,000', '25,000'], fontsize=ezAxisFontSize)
+    plt.xticks(fontsize=ezAxisFontSize)
 
     ylabelS = 'Gas Max Velocity around Galactic Center (km/s)\n'
     ylabelS += f'ezGalVelGLonEdgeLevelL = {ezGalVelGLonEdgeLevelL[0]:0.3f}  {ezGalVelGLonEdgeLevelL[1]:d}  {ezGalVelGLonEdgeLevelL[2]:d}'
-    plt.ylabel(ylabelS)
+    plt.ylabel(ylabelS, fontsize=ezTextFontSize)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     if os.path.exists(pltNameS):    # to force plot file date update, if file exists, delete it
         os.remove(pltNameS)
@@ -2161,18 +2251,20 @@ def plotEzGal559planetRot():
     plt.plot(semiMajorAxisAU, velocityKmPerSec, 'bo-')
 
     for i in range(9):
-        plt.text(semiMajorAxisAU[i]+1, velocityKmPerSec[i], name[i], fontsize=9)
+        plt.text(semiMajorAxisAU[i]+1, velocityKmPerSec[i], name[i], fontsize=ezTextFontSize) # fontsize=9
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     #plt.grid(ezGalDispGrid)
-    plt.xlabel('Radius from Sun (AU)')
+    plt.xlabel('Radius from Sun (AU)', fontsize=ezTextFontSize)
     plt.xlim(-1., 45.)
+    plt.xticks(fontsize=ezAxisFontSize)
 
-    plt.ylabel('Velocity around Sun (km/sec)')
+    plt.ylabel('Velocity around Sun (km/sec)', fontsize=ezTextFontSize)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     ax = plt.gca()
-    ax.text(0.95, 0.95, '( wikipedia.org/wiki/Planet#Solar_System )', horizontalalignment='right', transform=ax.transAxes)
-    ax.text(0.52, 0.75, '"Keplerian Rotation"', transform=ax.transAxes)
+    ax.text(0.95, 0.95, '( wikipedia.org/wiki/Planet#Solar_System )', horizontalalignment='right', transform=ax.transAxes, fontsize=ezAxisFontSize)
+    ax.text(0.52, 0.75, '"Keplerian Rotation"', transform=ax.transAxes, color='blue', fontsize=ezTextFontSize)
 
     if os.path.exists(pltNameS):    # to force plot file date update, if file exists, delete it
         os.remove(pltNameS)
@@ -2190,6 +2282,10 @@ def plotEzGal560galMass():
     global titleS                   # string
     global ezGalDispGrid            # integer
     global ezGalPlotRangeL          # integer list
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     plotCountdown -= 1
 
@@ -2259,27 +2355,29 @@ def plotEzGal560galMass():
     #plt.plot(galGasRadiusLy, galMassKg, 'b.')
     plt.plot(galGasRadiusKpc, galMassSolarMasses, 'b.')
 
-    plt.title(titleS)
+    plt.title(titleS, fontsize=ezTitleFontSize)
     plt.grid(ezGalDispGrid)
-    #plt.xlabel('Gas Radius from Galactic Center (Light Years)  (Sun = 26,000 ly)')
-    plt.xlabel('Radius from Galactic Center (kiloparsecs)  (Sun = 8 kpc)')
+    #plt.xlabel('Gas Radius from Galactic Center (Light Years)  (Sun = 26,000 ly)', fontsize=ezTextFontSize)
+    plt.xlabel('Radius from Galactic Center (kiloparsecs)  (Sun = 8 kpc)', fontsize=ezTextFontSize)
     #plt.xlim(0, 26000)        # radius from 0 to Solar radius from Galactic center (=26000 light years)
     #plt.xticks([0,   5000.,   10000.,   15000.,   20000.,   25000.],
-    #           ['0', '5,000', '10,000', '15,000', '20,000', '25,000'])
+    #           ['0', '5,000', '10,000', '15,000', '20,000', '25,000'], fontsize=ezAxisFontSize)
     plt.xlim(-0.2, 8.5)
+    plt.xticks(fontsize=ezAxisFontSize)
 
     #ylabelS = 'Enclosed Mass (kg)\n'
     ylabelS = 'Enclosed Mass (Solar Masses)\n'
     ylabelS += f'ezGalVelGLonEdgeLevelL = {ezGalVelGLonEdgeLevelL[0]:0.3f}  {ezGalVelGLonEdgeLevelL[1]:d}  {ezGalVelGLonEdgeLevelL[2]:d}'
-    plt.ylabel(ylabelS)
+    plt.ylabel(ylabelS, fontsize=ezTextFontSize)
 
     ax = plt.gca()
-    #ax.text(0.95, 0.05, '( wikipedia.org/wiki/Milky_Way says 1.15e+12 )', horizontalalignment='right', transform=ax.transAxes)
-    ax.text(0.02, 0.95, '( wikipedia.org/wiki/Milky_Way says 1.15e+12 )', transform=ax.transAxes)
-    ax.text(0.02, 0.89, '( Sofue 2017 says 1e+11 )', transform=ax.transAxes)
+    #ax.text(0.95, 0.05, '( wikipedia.org/wiki/Milky_Way says 1.15e+12 )', horizontalalignment='right', transform=ax.transAxes, fontsize=ezTextFontSize)
+    ax.text(0.02, 0.95, '( wikipedia.org/wiki/Milky_Way says 1.15e+12 )', transform=ax.transAxes, fontsize=ezAxisFontSize)
+    ax.text(0.02, 0.89, '( Sofue 2017 says 1e+11 )', transform=ax.transAxes, fontsize=ezAxisFontSize)
 
     galMassSolarMassesQ1Max = np.nanmax(galMassSolarMasses)
     plt.ylim(0, 1.1*galMassSolarMassesQ1Max)
+    plt.yticks(fontsize=ezAxisFontSize)
 
     velGLonUEdgeQ1Max = np.nanmax(velGLonUEdge[180:271])
     print('                         velGLonUEdgeQ1Max =', velGLonUEdgeQ1Max, 'at glon =',
@@ -2287,10 +2385,10 @@ def plotEzGal560galMass():
 
     print('                         galMassSolarMassesQ1Max =', galMassSolarMassesQ1Max, 'at glon =',
         np.where(galMassSolarMasses == galMassSolarMassesQ1Max)[0][0])     # use first element of list
-    #ax.text(0.95, 0.12, f'Max = {galMassSolarMassesQ1Max:0.2e}', horizontalalignment='right', transform=ax.transAxes)
-    #ax.text(0.02, 0.89, f'maximum = {galMassSolarMassesQ1Max:0.2e} = {galMassSolarMassesQ1Max/1.15e10:0.1f}%', transform=ax.transAxes)
-    ax.text(0.02, 0.83, f'measured maximum = {galMassSolarMassesQ1Max:0.2e}', transform=ax.transAxes)
-    ax.text(0.02, 0.77, f'the mass beyond Sun radius is not measured', transform=ax.transAxes)
+    #ax.text(0.95, 0.12, f'Max = {galMassSolarMassesQ1Max:0.2e}', horizontalalignment='right', transform=ax.transAxes, color='blue', fontsize=ezTextFontSize)
+    #ax.text(0.02, 0.89, f'maximum = {galMassSolarMassesQ1Max:0.2e} = {galMassSolarMassesQ1Max/1.15e10:0.1f}%', transform=ax.transAxes, color='blue', fontsize=ezTextFontSize)
+    ax.text(0.02, 0.83, f'measured maximum = {galMassSolarMassesQ1Max:0.2e}', transform=ax.transAxes, color='blue', fontsize=ezTextFontSize)
+    ax.text(0.02, 0.77, f'the mass beyond Sun radius is not measured', transform=ax.transAxes, fontsize=ezAxisFontSize)
     # 230509: LTO15 (-ezGalVelGLonEdgeLevelL 1.05 30 160) sees galMassSolarMassesQ1Max as 9.14e10
     #   wikipedia.org/wiki/Milky_Way says 1.15e12
     #   9.14e10 / 1.15e12 is 0.080 is 8.0%
@@ -2301,9 +2399,9 @@ def plotEzGal560galMass():
     #   8.95e10 / 1.15e12 is 0.078 is 7.8%
     #   So, remaining 2.2% of Galactic Mass is beyond Galactic radius of Sun ?  Seems possible.
 
-    ax.text(0.98, 0.15, '( wikipedia.org/wiki/Milky_Way says', horizontalalignment='right', transform=ax.transAxes)
-    ax.text(0.97, 0.09, '(about 90%) ... of the Milky Way', horizontalalignment='right', transform=ax.transAxes)
-    ax.text(0.99, 0.03, 'is invisible ... termed "dark matter" )', horizontalalignment='right', transform=ax.transAxes)
+    ax.text(0.98, 0.15, '( wikipedia.org/wiki/Milky_Way says', horizontalalignment='right', transform=ax.transAxes, fontsize=ezAxisFontSize)
+    ax.text(0.97, 0.09, '(about 90%) ... of the Milky Way', horizontalalignment='right', transform=ax.transAxes, fontsize=ezAxisFontSize)
+    ax.text(0.99, 0.03, 'is invisible ... termed "dark matter" )', horizontalalignment='right', transform=ax.transAxes, fontsize=ezAxisFontSize)
 
     if os.path.exists(pltNameS):    # to force plot file date update, if file exists, delete it
         os.remove(pltNameS)
@@ -2326,6 +2424,10 @@ def plotEzGal570galArmsSun():
     global ezGalPlotRangeL          # integer list
 
     global ezColorMap               # string
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     plotCountdown -= 1
 
@@ -2399,7 +2501,8 @@ def plotEzGal570galArmsSun():
                     c=velGLonP180[:,gLonDegP180], s=1, cmap=plt.get_cmap(ezColorMap), alpha=0.75)
 
         # Add a color bar which maps values to colors.
-        plt.colorbar(polarPlot, pad=0.1)
+        cbar = plt.colorbar(polarPlot, pad=0.1)
+        cbar.ax.tick_params(labelsize=ezHBarFontSize)
 
         # Plot yellow Sun at center, and green Galactic Center
         polarPlot = ax.scatter(0., 0., c='black', s=120, alpha=0.75)
@@ -2407,21 +2510,21 @@ def plotEzGal570galArmsSun():
         polarPlot = ax.scatter(0., galSunRadiusKm, c='black', s=120, alpha=0.75)
         polarPlot = ax.scatter(0., galSunRadiusKm, c='green', s=100, alpha=1.)
 
-        plt.title(titleS)
+        plt.title(titleS, fontsize=ezTitleFontSize)
 
         ax.set_rgrids((galSunRadiusPlotLimit,), ('',))
         ax.set_theta_zero_location('N', offset=0.0)
-        ax.set_thetagrids((0, 90, 180, 270), ('0', '90', '                               180 and -180 Galactic Longitude', '-90'))
+        ax.set_thetagrids((0, 90, 180, 270), ('0', '90', '                               180 and -180 Galactic Longitude', '-90'), fontsize=ezAxisFontSize)
         ax.set_rmax(galSunRadiusPlotLimit)
         ax.set_facecolor("black")
 
         radiusTextQuadrant = galSunRadiusPlotLimit * 1.4
-        ax.text( 0.9,  radiusTextQuadrant, 'Quadrant 1', color='red', verticalalignment='center')
-        ax.text( 2.25, radiusTextQuadrant, 'Quadrant 2', color='red', verticalalignment='center')
-        ax.text(-2.25, radiusTextQuadrant, 'Quadrant 3', color='red', verticalalignment='center', horizontalalignment='right')
-        ax.text(-0.9,  radiusTextQuadrant, 'Quadrant 4', color='red', verticalalignment='center', horizontalalignment='right')
+        ax.text( 0.9,  radiusTextQuadrant, 'Quadrant 1', color='red', verticalalignment='center', fontsize=ezTextFontSize)
+        ax.text( 2.25, radiusTextQuadrant, 'Quadrant 2', color='red', verticalalignment='center', fontsize=ezTextFontSize)
+        ax.text(-2.25, radiusTextQuadrant, 'Quadrant 3', color='red', verticalalignment='center', horizontalalignment='right', fontsize=ezTextFontSize)
+        ax.text(-0.9,  radiusTextQuadrant, 'Quadrant 4', color='red', verticalalignment='center', horizontalalignment='right', fontsize=ezTextFontSize)
 
-        ax.set_ylabel('Possible Galactic Atomic Hydrogen\n\nSun = Yellow Dot, Galactic Center = Green Dot\n\n')
+        ax.set_ylabel('Possible Galactic Atomic Hydrogen\n\nSun = Yellow Dot, Galactic Center = Green Dot\n\n', fontsize=ezTextFontSize)
 
         if os.path.exists(pltNameS):    # to force plot file date update, if file exists, delete it
             os.remove(pltNameS)
@@ -2444,6 +2547,10 @@ def plotEzGal580galArmsGC():
     global ezGalPlotRangeL          # integer list
 
     global ezColorMap               # string
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     plotCountdown -= 1
 
@@ -2585,7 +2692,8 @@ def plotEzGal580galArmsGC():
 
         img = plt.imshow(zi, aspect='auto', cmap=plt.get_cmap(ezColorMap))
         # Add a color bar which maps values to colors.
-        plt.colorbar(img, orientation='vertical', pad=0.1)
+        cbar = plt.colorbar(img, orientation='vertical', pad=0.1)
+        cbar.ax.tick_params(labelsize=ezHBarFontSize)
 
         # Plot green Galactic Center at center, and yellow Sun
         polarPlot = ax.scatter(200., 200., c='black', s=120, alpha=1.)
@@ -2593,15 +2701,15 @@ def plotEzGal580galArmsGC():
         polarPlot = ax.scatter(200., galSunRadiusKpc * 10. + 200., c='black',  s=120, alpha=1.)
         polarPlot = ax.scatter(200., galSunRadiusKpc * 10. + 200., c='yellow', s=100, alpha=1.)
 
-        plt.title(titleS)
+        plt.title(titleS, fontsize=ezTitleFontSize)
         plt.xticks(range(0, 401, 50),
-            ['-20', '-15', '-10', '-5', '0', '5', '10', '15', '20'])
+            ['-20', '-15', '-10', '-5', '0', '5', '10', '15', '20'], fontsize=ezAxisFontSize)
         plt.yticks(range(400, -1, -50),
-            ['-20', '-15', '-10', '-5', '0', '5', '10', '15', '20'])
+            ['-20', '-15', '-10', '-5', '0', '5', '10', '15', '20'], fontsize=ezAxisFontSize)
         ax.set_facecolor("black")
 
-        ax.set_xlabel('Distance (kiloparsecs)')
-        ax.set_ylabel('Possible Galactic Atomic Hydrogen\n\nGalactic Center = Green Dot, Sun = Yellow Dot')
+        ax.set_xlabel('Distance (kiloparsecs)', fontsize=ezTextFontSize)
+        ax.set_ylabel('Possible Galactic Atomic Hydrogen\n\nGalactic Center = Green Dot, Sun = Yellow Dot', fontsize=ezTextFontSize)
 
         if os.path.exists(pltNameS):    # to force plot file date update, if file exists, delete it
             os.remove(pltNameS)
@@ -2624,6 +2732,10 @@ def plotEzGal60XgLonSpectra():
     global titleS                   # string
     global ezGalDispGrid            # integer
     global ezGalPlotRangeL          # integer list
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     # if not wanted, or nothing in velGLonP180 to save or plot
     if not (ezGalPlotRangeL[0] <= 604 and 601 <= ezGalPlotRangeL[1] and velGLonP180CountSum):
@@ -2738,6 +2850,10 @@ def plotEzGal605gLonSpectraCompare():
     global ezGalDispGrid            # integer
     global ezGalPlotRangeL          # integer list
 
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
+
     # if not wanted, or nothing in velGLonP180 to save or plot
     if not (ezGalPlotRangeL[0] <= 605 and 605 <= ezGalPlotRangeL[1] and velGLonP180CountSum):
         return(0)       # plot not needed
@@ -2802,7 +2918,7 @@ def plotEzGal605gLonSpectraCompare():
 
             #ax.set_xticks([], [])
             #ax.set_yticks([], [])
-            ax.xaxis.set_ticks([])
+            ax.xaxis.set_ticks([], [])
             ax.yaxis.set_ticks([])
             ax.axvline(linewidth=0.5, color='b')
 
@@ -2838,6 +2954,10 @@ def plotEzGal61XgLonSpectraCascade():
     global titleS                   # string
     global ezGalDispGrid            # integer
     global ezGalPlotRangeL          # integer list
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     # if not wanted, or nothing in velGLonP180 to save or plot
     if not (ezGalPlotRangeL[0] <= 614 and 610 <= ezGalPlotRangeL[1] and velGLonP180CountSum):
@@ -2934,20 +3054,23 @@ def plotEzGal61XgLonSpectraCascade():
                         # draw a vertical thin white line below every velocity spectra data point
                         ax.fill_between(velocityBin, y, y-gain, facecolor='white', linewidth=0, zorder=i+i+1)
 
-            plt.title(titleS)
+            plt.title(titleS, fontsize=ezTitleFontSize)
 
-            plt.xlabel('Velocity (km/s)')
+            plt.xlabel('Velocity (km/s)', fontsize=ezTextFontSize)
             #velocitySpanMax = +dopplerSpanD2 * (299792458. / freqCenter) / 1000.  # = 253.273324388 km/s
             plt.xlim(-velocitySpanMax, velocitySpanMax)
+            plt.xticks(fontsize=ezAxisFontSize)
 
             if gQuadrant:
                 # Galactic quadrants 1 through 4
-                plt.ylabel(f'Galactic Quadrant {gQuadrant}')
+                plt.ylabel(f'Galactic Quadrant {gQuadrant}', fontsize=ezTextFontSize)
                 plt.ylim(gLonP180Start-182, yMax+2)
+                plt.yticks(fontsize=ezAxisFontSize)
             else:
                 # Galactic quadrants 0 (all)
-                plt.ylabel('Galactic Longitudes   (-180 thru +179 degrees)')
+                plt.ylabel('Galactic Longitudes   (-180 thru +179 degrees)', fontsize=ezTextFontSize)
                 plt.ylim(-186, yMax+6)
+                plt.yticks(fontsize=ezAxisFontSize)
 
             if os.path.exists(pltNameS): # to force plot file date update, if file exists, delete it
                 os.remove(pltNameS)
@@ -2970,6 +3093,10 @@ def plotEzGal710gLonDegP180_nnnByFreqBinAvg():
     global titleS                   # string
     global ezGalDispGrid            # integer
     global ezGalPlotRangeL          # integer list
+
+    global ezTextFontSize           # integer
+    global ezTitleFontSize          # integer
+    global ezAxisFontSize           # integer
 
     # if anything in velGLonP180 to plot
     if ezGalPlotRangeL[0] <= 710 and 710 <= ezGalPlotRangeL[1] and velGLonP180CountSum:
@@ -3002,11 +3129,12 @@ def plotEzGal710gLonDegP180_nnnByFreqBinAvg():
                 # velGLonP180 stores increasing velocity
                 plt.plot(velocityBin, velGLonP180[:, gLonP180])
 
-                plt.title(titleS)
+                plt.title(titleS, fontsize=ezTitleFontSize)
                 plt.grid(ezGalDispGrid)
 
-                plt.xlabel('Velocity (km/s)')
+                plt.xlabel('Velocity (km/s)', fontsize=ezTextFontSize)
                 plt.xlim(-velocitySpanMax, velocitySpanMax)
+                plt.xticks(fontsize=ezAxisFontSize)
 
                 if 0:
                     # new ylim for each ezGal710gLonDegP180_nnnByFreqBinAvg plot
@@ -3017,6 +3145,7 @@ def plotEzGal710gLonDegP180_nnnByFreqBinAvg():
                     print('                         yLimMax =', yLimMax)
 
                 plt.ylim(yLimMin, yLimMax)
+                plt.yticks(fontsize=ezAxisFontSize)
 
                 # create gLonDegS with form of '+nnn' or '-nnn' degrees
                 if gLonP180 < 180:
@@ -3026,7 +3155,7 @@ def plotEzGal710gLonDegP180_nnnByFreqBinAvg():
 
                 plt.ylabel(f'{antXTVTName} Average Velocity Spectrum' \
                     + f'\n\nGalactic Longitude = {gLonDegS} degrees', \
-                    rotation=90, verticalalignment='bottom')
+                    rotation=90, verticalalignment='bottom', fontsize=ezTextFontSize)
 
                 if os.path.exists(pltNameS): # to force plot file date update, if file exists, delete it
                     os.remove(pltNameS)
