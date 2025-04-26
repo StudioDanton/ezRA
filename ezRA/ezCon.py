@@ -388,6 +388,7 @@ def printUsage():
     print('    -ezConRawFreqBinHide  129        (hide Raw freqBin 129 by copying from freqBin 128)')
     #print('    -ezConRawFreqBinSmooth 1,1       ',
     #    '(RFI spur limiter: maximum muliplier over 4 neighboring freqBin of same Raw sample)')
+    print('    -ezConAntRBFreqBinShift 1        (Shift ezConRawFreqBinHide freqBin list alternatively by x samples)')
     print()
     print('    -ezConRefMode 1                  (Dicke Reference sample creation method, default = 10)')
     print('      -ezConRefMode N < 0: REF = spectrum from -Nth ANT sample')
@@ -530,6 +531,7 @@ def printHello():
     print('=================================================')
     print(' Local time =', time.asctime(time.localtime()))
     print(' programRevision =', programRevision)
+    print(' Python sys.version =', sys.version)
     print()
 
     commandString = '  '.join(sys.argv)
@@ -557,6 +559,7 @@ def ezConArgumentsFile(ezDefaultsFileNameInput):
 
     global ezConRawSamplesUseL              # integer list
     global ezConRawFreqBinHideL             # integer list
+    global ezConAntRBFreqBinShift           # integer
 
     global ezConAntSamplesUseL              # integer list
     global ezConAntPluckL                   # integer list
@@ -719,6 +722,8 @@ def ezConArgumentsFile(ezDefaultsFileNameInput):
             #elif thisLine0Lower == '-ezConVelGLonEdgeLevel'.lower():
             #    ezConVelGLonEdgeLevel = float(thisLine[1])
 
+            elif thisLine0Lower == '-ezConAntRBFreqBinShift'.lower():
+                ezConAntRBFreqBinShift = int(thisLine[1])
 
             # list arguments:
             elif thisLine0Lower == '-ezConRawFreqBinHide'.lower():
@@ -870,6 +875,7 @@ def ezConArgumentsCommandLine():
 
     global ezConRawSamplesUseL              # integer list
     global ezConRawFreqBinHideL             # integer list
+    global ezConAntRBFreqBinShift           # integer
 
     global ezConAntSamplesUseL              # integer list
     global ezConAntPluckL                   # integer list
@@ -1083,6 +1089,9 @@ def ezConArgumentsCommandLine():
             #    cmdLineSplitIndex += 1      # point to first argument value
             #    ezConVelGLonEdgeLevel = float(cmdLineSplit[cmdLineSplitIndex])
 
+            elif cmdLineArgLower == '-ezConAntRBFreqBinShift'.lower():
+                cmdLineSplitIndex += 1      # point to first argument value
+                ezConAntRBFreqBinShift = int(cmdLineSplit[cmdLineSplitIndex])
 
             # list arguments:
             elif cmdLineArgLower == '-ezConRawFreqBinHide'.lower():
@@ -1298,6 +1307,7 @@ def ezConArguments():
 
     global ezConRawSamplesUseL              # integer list
     global ezConRawFreqBinHideL             # integer list
+    global ezConAntRBFreqBinShift           # integer
 
     global ezConAntSamplesUseL              # integer list
     global ezConAntPluckL                   # integer list
@@ -1369,6 +1379,7 @@ def ezConArguments():
 
         ezConRawSamplesUseL   = []          # empty to disable
         ezConRawFreqBinHideL  = []          # empty to disable
+        ezConAntRBFreqBinShift = 0          # 0 to disable
 
         ezConAntSamplesUseL   = []          # empty to disable
         ezConAntPluckL        = []          # empty to disable
@@ -1455,6 +1466,12 @@ def ezConArguments():
 
     # sanity tests
 
+    # Shifter limitation
+    if ezConAntRBFreqBinShift > 5:
+      ezConAntRBFreqBinShift = 5
+    elif ezConAntRBFreqBinShift < -5:
+      ezConAntRBFreqBinShift = -5
+
     if ezConAntXInput not in [-1, 0, 2, 4, 5, 6]:
         print()
         print()
@@ -1529,6 +1546,7 @@ def ezConArguments():
         print()
         print('   ezConRawSamplesUseL   =', ezConRawSamplesUseL)
         print('   ezConRawFreqBinHideL  =', ezConRawFreqBinHideL)
+        print('   ezConAntRBFreqBinShift  =', ezConAntRBFreqBinShift)
         print()
         print('   ezConRefMode          =', ezConRefMode)
         print()
@@ -6369,12 +6387,39 @@ def plotEzCon067antRB():
     global freqCenter                           # float
     global ezConUseRefSub                       # integer
 
+    global ezConRawFreqBinHideL                 # integer list
+    global ezConAntRBFreqBinShift               # integer
+
     plotName = 'ezCon067antRB.png'
 
     if ezConUseRefSub:
         antRB = antRA - antRABaseline           # creation
     else:
         antRB = antRA / antRABaseline           # creation
+
+    # shift freq bins
+    if ezConAntRBFreqBinShift:
+        print()
+        print('   ezConAntRBFreqBinShift ===============')
+
+        # After Hide frequency bin numbers with ezConRawFreqBinHideL.
+        # If bin > 0, shift the copy from lessor neighbor freq bin alternatively
+        # to create less visible artifact in case of several continuous FreqBin Hide
+        print()
+        Shifter = 0
+        for i in range(len(ezConRawFreqBinHideL)):
+            ezConRawFreqBinHide = ezConRawFreqBinHideL[i]
+            ezConRawFreqBinHidePrev = ezConRawFreqBinHideL[i-1] if (i > 0) else 0
+            if ezConRawFreqBinHide: # do not try to shift freqBin 0
+                Shifter = (Shifter + 1) if ((ezConRawFreqBinHidePrev + 1) == ezConRawFreqBinHide) else 0
+                if Shifter % 2 == 0:
+                    # shifts the x-axis if the shifter is even
+                    print('   ezConRawFreqBinHideL[' + str(i) + '] = ' + str(ezConRawFreqBinHide) + ' ->' )
+                    antRB[ezConRawFreqBinHide] = np.roll(antRB[ezConRawFreqBinHide], ezConAntRBFreqBinShift)
+                else:
+                    # do nothing if the shifter is odd
+                    print('   ezConRawFreqBinHideL[' + str(i) + '] = ' + str(ezConRawFreqBinHide) + ' |' )
+                    #antRB[ezConRawFreqBinHide] = np.roll(antRB[ezConRawFreqBinHide], -1)
 
     plotCountdown -= 1
 
