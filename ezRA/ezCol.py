@@ -1057,7 +1057,9 @@ def main():
     #   sudo apt-get install python3-pil python3-pil.imagetk 
     from matplotlib.widgets import Button, RadioButtons, TextBox
 
-    print('\n matplotlib.__version__ =', matplotlib.__version__)
+
+    print ('\n Python sys.version =', sys.version)
+    print ('\n matplotlib.__version__ =', matplotlib.__version__)
 
     freqBinQty = 2 ** ezColFreqBinQtyBits
 
@@ -1120,6 +1122,10 @@ def main():
     centerFreqRefHz = int(ezColCenterFreqRef * 1e6)         	# in integer Hz
     bandWidthHz = ezColBandWidth * 1e6                          # in float Hz
 
+    # Auto size figure
+    ezColTitleFontSize = 2 * ezColTextFontSize
+    ezColLabelFontSize = 2 + ezColTextFontSize
+
     programState = 0                # 0: "To File", 1: Idle, 2: Exit, in case no ezColDashboard
     
     if ezColUsbRelay:
@@ -1129,8 +1135,8 @@ def main():
 
     # initialize dashboard
     if ezColDashboard:
-        fig = plt.figure(figsize=(20, 12))
-        fig.suptitle('ezRA - Easy Radio Astronomy Data Collector - ' + programName, fontsize = 22, y = 0.99)
+        fig = plt.figure(figsize=(20, 12), num="ezRA - " + programName)
+        fig.suptitle('ezRA - Easy Radio Astronomy Data Collector', fontsize=ezColTitleFontSize, y=0.99) # 22
         grid = fig.add_gridspec(4, 2, hspace=1.0)
         details_ax    = fig.add_subplot(grid[0  , 1])
         powerTime_ax1 = fig.add_subplot(grid[1  , 1])     # Recent  n number of samples
@@ -1142,9 +1148,9 @@ def main():
         powerTime_ax2XB = powerTime_ax2.twiny()  # instantiate a second axes that shares the same y-axis
         powerTime_ax3XB = powerTime_ax3.twiny()  # instantiate a second axes that shares the same y-axis
         spectrum_axXB = spectrum_ax.twiny()  # instantiate a second axes that shares the same y-axis
-        spectrum_axXB.set_xlabel('Doppler (MHz)')
+        spectrum_axXB.set_xlabel('Doppler (MHz)', fontsize=ezColTextFontSize)
         spectrum_axYB = spectrum_ax.twinx()  # instantiate a second axes that shares the same x-axis
-        spectrum_axYB.set_ylabel('Fraction of Y Auto Scale')
+        spectrum_axYB.set_ylabel('Fraction of Y Auto Scale', fontsize=ezColTextFontSize)
         spectrum_ax.autoscale(enable = True, axis = 'y')
 
         bandWidthD2 = ezColBandWidth / 2.                       # ezColBandWidth Divided by 2, in MHz
@@ -1165,6 +1171,7 @@ def main():
             rmsAvgHistoryLenRecent1Hour  = 0
         axNewPlot = plt.axes([0.865, 0.95, 0.05, 0.04])
         bNewPlot = Button(axNewPlot, 'New Plot')
+        bNewPlot.label.set_fontsize(ezColLabelFontSize)
         bNewPlot.on_clicked(newPlot)
 
         # dashboard 'NewFile' button, to start a new data file, and clear stripchart plots
@@ -1173,6 +1180,7 @@ def main():
             dateDayLastS = 'newFileButton'                      # silly value to force new data file
         axNewFile = plt.axes([0.92, 0.95, 0.05, 0.04])
         bNewFile = Button(axNewFile, 'New File')
+        bNewFile.label.set_fontsize(ezColLabelFontSize)
         bNewFile.on_clicked(newFile)
 
         # dashboard 'coord0' number entry, change coord0 value live
@@ -1185,6 +1193,8 @@ def main():
                 coordMayBeNew = 1
         coord0Entry_ax = fig.add_axes([0.58, 0.81, 0.04, 0.04])
         coord0EntryBox = TextBox(coord0Entry_ax, '')
+        coord0EntryBox.text_disp.set_fontsize(ezColLabelFontSize)
+        coord0EntryBox.label.set_fontsize(ezColTextFontSize)
         coord0EntryBox.on_submit(coord0Entry)
         coord0EntryBox.set_val(str(coord0))         # initialize string of coord0EntryBox
 
@@ -1198,6 +1208,8 @@ def main():
                 coordMayBeNew = 1
         coord1Entry_ax = fig.add_axes([0.58, 0.77, 0.04, 0.04])
         coord1EntryBox = TextBox(coord1Entry_ax, '')
+        coord1EntryBox.text_disp.set_fontsize(ezColLabelFontSize)
+        coord1EntryBox.label.set_fontsize(ezColTextFontSize)
         coord1EntryBox.on_submit(coord1Entry)
         coord1EntryBox.set_val(str(coord1))         # initialize string of coord1EntryBox
 
@@ -1215,6 +1227,7 @@ def main():
             coordMayBeNew = 1
         radio3_ax = plt.axes([0.625, 0.77, 0.05, 0.08], facecolor='lightgoldenrodyellow')
         radio3 = RadioButtons(radio3_ax, ('AzEl', 'RaDec', 'GLatGLon'))
+        for r in radio3.labels: r.set_fontsize(ezColTextFontSize) # smaller
         radio3.on_clicked(coordTypeEntry)
 
         # now that radio3 RadioButtons and coordTypeEntry() exist, initialize radio3
@@ -1250,6 +1263,7 @@ def main():
         #radio2_ax = plt.axes([0.865, 0.85, 0.05, 0.09], facecolor='lightgoldenrodyellow')
         radio2_ax = plt.axes([0.92, 0.85, 0.05, 0.09], facecolor='lightgoldenrodyellow')
         radio2 = RadioButtons(radio2_ax, ('To File', 'Idle', 'Exit'))
+        for r in radio2.labels: r.set_fontsize(ezColLabelFontSize)
         radio2.on_clicked(programStateEntry)
 
         # dashboard 'RefDiv' radio buttons, spectrum divided by (or subtracting) last REF sample
@@ -1266,6 +1280,7 @@ def main():
         radio1_ax = plt.axes([0.865, 0.85, 0.05, 0.09], facecolor='lightgoldenrodyellow')
         #radio1 = RadioButtons(radio1_ax, ('Off', 'RefDiv', 'RefSub'))
         radio1 = RadioButtons(radio1_ax, ('Off', 'RefDiv', 'RefSub'), active=ezColRefAction)
+        for r in radio1.labels: r.set_fontsize(ezColLabelFontSize)
         radio1.on_clicked(refActionFunction)
         #refAction = 0                   # default Off
         refAction = ezColRefAction
@@ -1280,6 +1295,8 @@ def main():
                 ezColIntegQtyQueue.put(ezColIntegQty)
         ezColIntegQtyEntry_ax = fig.add_axes([0.92, 0.75, 0.05, 0.04])
         ezColIntegQtyEntryBox = TextBox(ezColIntegQtyEntry_ax, 'ezColIntegQty ')
+        ezColIntegQtyEntryBox.text_disp.set_fontsize(ezColLabelFontSize)
+        ezColIntegQtyEntryBox.label.set_fontsize(ezColTextFontSize)
         ezColIntegQtyEntryBox.on_submit(ezColIntegQtyEntry)
         ezColIntegQtyEntryBox.set_val(str(ezColIntegQty))   # initialize string of ezColIntegQtyEntryBox
 
@@ -1293,6 +1310,8 @@ def main():
                 ezColYLim1 = float(ezColYLimEntrySplit[1])
         ezColYLimEntry_ax = fig.add_axes([0.92, 0.70, 0.05, 0.04])
         ezColYLimEntryBox = TextBox(ezColYLimEntry_ax, 'Fraction of     \nY Auto Scale, \nMin and Max ')
+        ezColYLimEntryBox.text_disp.set_fontsize(ezColLabelFontSize)
+        ezColYLimEntryBox.label.set_fontsize(ezColTextFontSize)
         ezColYLimEntryBox.on_submit(ezColYLimEntry)
         # initialize string of ezColYLimEntryBox
         ezColYLimEntryBox.set_val(str(ezColYLim0) + '   ' + str(ezColYLim1))
@@ -1628,8 +1647,9 @@ def main():
                     rmsAvgHistory, \
                     marker = '.', markersize = 2, color = 'r')
                 # x-scale increases to the left
-                powerTime_ax3.set(xlim = [24., 0.], xticks=range(24, -1, -1), \
-                    xlabel = 'Recent 24 Hours', ylabel = 'Relative RMS Power')
+                powerTime_ax3.set(xlim = [24., 0.], xticks=range(24, -1, -1))
+                powerTime_ax3.set_xlabel('Recent 24 Hours', fontsize=ezColTextFontSize)
+                powerTime_ax3.set_ylabel('Relative RMS Power', fontsize=ezColTextFontSize)
 
                 # set top Local Mean Sidereal Time (LMST) x-scale
                 lmstThisInt = int(lmstThis)
@@ -1637,8 +1657,8 @@ def main():
                     xticks=[lmstThisInt - x for x in [23, 22, 21, 20,
                         19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 
                         9, 8, 7, 6, 5, 4, 3, 2, 1, 0]],
-                    xticklabels=lmstLabels1to0to0[lmstThisInt:lmstThisInt + 24], \
-                    xlabel = "Local Mean Sidereal Time (LMST) Hours = south's Right Ascension")
+                    xticklabels=lmstLabels1to0to0[lmstThisInt:lmstThisInt + 24])
+                powerTime_ax3XB.set_xlabel("Local Mean Sidereal Time (LMST) Hours = south's Right Ascension", fontsize=ezColTextFontSize)
 
 
 
@@ -1647,8 +1667,9 @@ def main():
                     rmsAvgHistory[:rmsAvgHistoryLenRecent1Hour], \
                     marker = '.', markersize = 2, color = 'c')
                 # x-scale increases to the left
-                powerTime_ax2.set(xlim = [1., 0.], xticks=np.linspace(1, 0, num=11, endpoint=True),
-                    xlabel = 'Recent One Hour', ylabel = 'Relative RMS Power')
+                powerTime_ax2.set(xlim = [1., 0.], xticks=np.linspace(1, 0, num=11, endpoint=True))
+                powerTime_ax2.set_xlabel('Recent One Hour', fontsize=ezColTextFontSize)
+                powerTime_ax2.set_ylabel('Relative RMS Power', fontsize=ezColTextFontSize)
 
                 # set top Local Mean Sidereal Time (LMST) x-scale
                 lmstThisInTenths = int(lmstThis * 10.) / 10.        # lmstThis with one decimal digit
@@ -1656,8 +1677,8 @@ def main():
                     [lmstThisInTenths - x for x in [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]]
                 powerTime_ax2XB.set(xlim=[lmstThis - 1, lmstThis], \
                     xticks=powerTime_ax2XBXticks, \
-                    xticklabels=[f'{x:0.1f}' for x in powerTime_ax2XBXticks], \
-                    xlabel = "approximate Local Mean Sidereal Time (LMST) Hours = south's Right Ascension")
+                    xticklabels=[f'{x:0.1f}' for x in powerTime_ax2XBXticks])
+                powerTime_ax2XB.set_xlabel("approximate Local Mean Sidereal Time (LMST) Hours = south's Right Ascension", fontsize=ezColTextFontSize)
 
 
 
@@ -1666,8 +1687,9 @@ def main():
                     rmsAvgHistory[:rmsAvgHistoryLenRecent], \
                     marker = '.', markersize = 2, color = 'b')
                 # x axis increases to the left
-                powerTime_ax1.set(xlim = [rmsAvgHistoryLenRecentMost, 0], \
-                    xlabel = 'Recent Samples', ylabel = 'Relative RMS Power')
+                powerTime_ax1.set(xlim = [rmsAvgHistoryLenRecentMost, 0])
+                powerTime_ax1.set_xlabel('Recent Samples', fontsize=ezColTextFontSize)
+                powerTime_ax1.set_ylabel('Relative RMS Power', fontsize=ezColTextFontSize)
 
 
 
@@ -1685,16 +1707,18 @@ def main():
                         # plot as Ref spectrum, with REF frequencies
                         spectrum_ax.plot(freqsRef, rmsSpectrum, color = 'r')
                         # plot as Ref spectrum, with REF frequency limit values
-                        spectrum_ax.set(xlim = [freqMinRef, freqMaxRef],
-                            xlabel = 'Reference Frequency (MHz)', ylabel = 'Relative RMS Power')
+                        spectrum_ax.set(xlim = [freqMinRef, freqMaxRef])
+                        spectrum_ax.set_xlabel('Reference Frequency (MHz)', fontsize=ezColTextFontSize)
+                        spectrum_ax.set_ylabel('Relative RMS Power', fontsize=ezColTextFontSize)
                         # plot vertical dashed green line on REF center frequency
                         spectrum_ax.axvline(ezColCenterFreqRef, color = 'g', linestyle = ':', linewidth = 2)
                     else:
                         # plot as Ant spectrum, with Ant frequencies
                         spectrum_ax.plot(freqsAnt, rmsSpectrum, color = 'r')
                         # plot as Ant spectrum, with Ant frequency limit values
-                        spectrum_ax.set(xlim = [freqMinAnt, freqMaxAnt],
-                            xlabel = 'Frequency (MHz)', ylabel = 'Relative RMS Power')
+                        spectrum_ax.set(xlim = [freqMinAnt, freqMaxAnt])
+                        spectrum_ax.set_xlabel('Frequency (MHz)', fontsize=ezColTextFontSize)
+                        spectrum_ax.set_ylabel('Relative RMS Power', fontsize=ezColTextFontSize)
                         # plot vertical dashed green line on Ant center frequency
                         spectrum_ax.axvline(ezColCenterFreqAnt, color = 'g', linestyle = ':', linewidth = 2)
 
@@ -1702,8 +1726,9 @@ def main():
                     spectrum_ax.plot(freqsAnt, \
                         tuple(map(operator.truediv, rmsSpectrumAntLast, rmsSpectrumRefLast)), color = 'r')
                     # plot as Ant spectrum, with Ant frequency limit values
-                    spectrum_ax.set(xlim = [freqMinAnt, freqMaxAnt],
-                        xlabel = 'Frequency (MHz)', ylabel = 'Relative RMS Power')
+                    spectrum_ax.set(xlim = [freqMinAnt, freqMaxAnt])
+                    spectrum_ax.set_xlabel('Frequency (MHz)', fontsize=ezColTextFontSize)
+                    spectrum_ax.set_ylabel('Relative RMS Power', fontsize=ezColTextFontSize)
                     # plot vertical dashed green line on Ant center frequency
                     spectrum_ax.axvline(ezColCenterFreqAnt, color = 'g', linestyle = ':', linewidth = 2)
 
@@ -1713,8 +1738,9 @@ def main():
                         tuple(map(operator.__abs__, \
                         map(operator.sub, rmsSpectrumAntLast, rmsSpectrumRefLast))), color = 'r')
                     # plot as Ant spectrum, with Ant frequency limit values
-                    spectrum_ax.set(xlim = [freqMinAnt, freqMaxAnt],
-                        xlabel = 'Frequency (MHz)', ylabel = 'Relative RMS Power')
+                    spectrum_ax.set(xlim = [freqMinAnt, freqMaxAnt])
+                    spectrum_ax.set_xlabel('Frequency (MHz)', fontsize=ezColTextFontSize)
+                    spectrum_ax.set_ylabel('Relative RMS Power', fontsize=ezColTextFontSize)
                     # plot vertical dashed green line on Ant center frequency
                     spectrum_ax.axvline(ezColCenterFreqAnt, color = 'g', linestyle = ':', linewidth = 2)
 
