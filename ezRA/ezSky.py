@@ -274,6 +274,8 @@ def printUsage():
     print()
     print('    -ezColorMap          gnuplot   (color map: jet, turbo, gnuplot2, viridis, plasma..., none = gnuplot)')
     print()
+    print('    -ezSkyBackgroundNb   1         (choose a background image number to use, 0 = none)')
+    print()
     print('    -ezSkyInput          18        (choose input .ezb data column)')
     print()
     print("    -ezSkyAddRAH         9.4       (add to data file's Right Ascension (hours))")
@@ -394,6 +396,7 @@ def ezSkyArgumentsFile(ezDefaultsFileNameInput):
     global ezRAObsName                      # string
     global ezTextFontSize                   # integer
 
+    global ezSkyBackgroundNb                # integer
     global ezColorMap                       # string
 
     global ezSkyAddRAH                      # float
@@ -461,6 +464,9 @@ def ezSkyArgumentsFile(ezDefaultsFileNameInput):
                 ezTextFontSize = int(fileLineSplit[1])
 
             # ezSky arguments:
+            elif fileLineSplit0Lower == '-ezSkyBackgroundNb'.lower():
+                ezSkyBackgroundNb = int(fileLineSplit[1])
+
             elif fileLineSplit0Lower == '-ezSkyAddRAH'.lower():
                 ezSkyAddRAH = float(fileLineSplit[1])
 
@@ -578,6 +584,7 @@ def ezSkyArgumentsCommandLine():
     global ezRAObsName                      # string
     global ezTextFontSize                   # integer
 
+    global ezSkyBackgroundNb                # integer
     global ezColorMap                       # string
 
     global ezSkyAddRAH                      # float
@@ -669,6 +676,9 @@ def ezSkyArgumentsCommandLine():
                 ezTextFontSize = int(cmdLineSplit[cmdLineSplitIndex])
 
             # ezSky arguments:
+            elif cmdLineArgLower == 'ezSkyBackgroundNb'.lower():
+                ezSkyBackgroundNb = int(cmdLineSplit[cmdLineSplitIndex])
+
             elif cmdLineArgLower == 'ezSkyAddRAH'.lower():
                 ezSkyAddRAH = float(cmdLineSplit[cmdLineSplitIndex])
 
@@ -825,9 +835,10 @@ def ezSkyArguments():
     global galacticPower                    # empty list or float 1d array
     global galacticPowerBox                 # empty list or float 1d array
 
-    global ezSkyBackground1                 # string
-    global ezSkyBackground1XMax             # integer
-    global ezSkyBackground1YMax             # integer
+    global ezSkyBackgroundNb                # integer
+    global ezSkyBackground                  # string
+    global ezSkyBackgroundXMax              # integer
+    global ezSkyBackgroundYMax              # integer
 
     global ezColorMap                       # string
 
@@ -836,6 +847,7 @@ def ezSkyArguments():
     ezRAObsName = ''                        # silly name
     ezTextFontSize = 10
 
+    ezSkyBackgroundNb = 1                   # default background image
     ezColorMap = 'gnuplot'                  # default color map
 
     ezSkyAddRAH    = 0.
@@ -911,15 +923,25 @@ def ezSkyArguments():
     #       https://www.itu.int/rec/R-REC-P.372-8-200304-S/en
     #   which leads to pages 20-23 of
     #       https://www.itu.int/dms_pubrec/itu-r/rec/p/R-REC-P.372-8-200304-S!!PDF-E.pdf
-    ezSkyBackground1 = os.path.dirname(__file__) + os.path.sep + 'ezSkyBackground1.jpg'  
-    ezSkyBackground1XMax = 1624
-    ezSkyBackground1YMax =  812
+
+    ezSkyBackgroundXMax = 1024 # default image size
+    ezSkyBackgroundYMax = 512  # default image size
+    if ezSkyBackgroundNb > 0:
+        ezSkyBackground = os.path.dirname(__file__) + os.path.sep + 'ezSkyBackground' + str(ezSkyBackgroundNb) + '.jpg'
+        if not os.path.exists(ezSkyBackground):
+            ezSkyBackgroundNb = -1  # Neutralise image if file doesn't exist
 
     # print status
     print()
     print('   ezRAObsName =', ezRAObsName)
     print('   ezTextFontSize =', ezTextFontSize)
     print()
+    if ezSkyBackgroundNb > 0:
+         print('   ezSkyBackgroundNb =', ezSkyBackgroundNb, ' = ', ezSkyBackground)
+    elif ezSkyBackgroundNb < 0:
+         print('   ezSkyBackgroundNb = not found')
+    else:
+         print('   ezSkyBackgroundNb = none')
     print('   ezColorMap =', ezColorMap)
     print()
     print('   ezSkyAddRAH    =', ezSkyAddRAH)
@@ -1881,9 +1903,10 @@ def plotEzSky200RBVO():
     global titleS                   # string
     #global ezSkyDispGrid           # integer
 
-    global ezSkyBackground1         # string
-    global ezSkyBackground1XMax     # integer
-    global ezSkyBackground1YMax     # integer
+    global ezSkyBackgroundNb        # integer
+    global ezSkyBackground          # string
+    global ezSkyBackgroundXMax      # integer
+    global ezSkyBackgroundYMax      # integer
 
     global ezTextFontSize           # integer
     global ezTitleFontSize          # integer
@@ -1908,24 +1931,29 @@ def plotEzSky200RBVO():
     ax = fig.add_subplot(111)
 
     # plot RaDec background
-    backImg = plt.imread(ezSkyBackground1)    # Reeve map
+    if ezSkyBackgroundNb > 0:
+        backImg = plt.imread(ezSkyBackground)    # Reeve map
+        # Getting dimensions (height and width)
+        ezSkyBackgroundXMax = backImg.shape[1]
+        ezSkyBackgroundYMax = backImg.shape[0]
 
     imgaxes = fig.add_axes(ax.get_position(), label='image', xticks=[], yticks=[])
     #print(ax.get_position())
 
-    imgaxes.set_xlim(0, ezSkyBackground1XMax)
-    imgaxes.set_ylim(0, ezSkyBackground1YMax)
+    imgaxes.set_xlim(0, ezSkyBackgroundXMax)
+    imgaxes.set_ylim(0, ezSkyBackgroundYMax)
 
     plt.gca().invert_yaxis()
 
-    # comment next line to remove background
-    img = imgaxes.imshow(backImg, aspect='auto')
+    # comment next lines to remove background
+    if ezSkyBackgroundNb > 0:
+        img = imgaxes.imshow(backImg, aspect='auto')
 
     ax.set_axis_off()
 
     # map radec to background image
-    imgaxesRatioX = ezSkyBackground1XMax / 720
-    imgaxesRatioY = ezSkyBackground1YMax / 360
+    imgaxesRatioX = ezSkyBackgroundXMax / 720
+    imgaxesRatioY = ezSkyBackgroundYMax / 360
     raHalfDegScaled  = (720 - raHalfDeg ) * imgaxesRatioX
     decHalfDegScaled = (360 - decHalfDeg) * imgaxesRatioY
 
@@ -2010,9 +2038,10 @@ def plotEzSky201RBMax():
     global titleS                   # string
     #global ezSkyDispGrid           # integer
 
-    global ezSkyBackground1         # string
-    global ezSkyBackground1XMax     # integer
-    global ezSkyBackground1YMax     # integer
+    global ezSkyBackgroundNb        # integer
+    global ezSkyBackground          # string
+    global ezSkyBackgroundXMax      # integer
+    global ezSkyBackgroundYMax      # integer
 
     global ezTextFontSize           # integer
     global ezTitleFontSize          # integer
@@ -2037,24 +2066,29 @@ def plotEzSky201RBMax():
     ax = fig.add_subplot(111)
 
     # plot RaDec background
-    backImg = plt.imread(ezSkyBackground1)    # Reeve map
+    if ezSkyBackgroundNb > 0:
+        backImg = plt.imread(ezSkyBackground)    # Reeve map
+        # Getting dimensions (height and width)
+        ezSkyBackgroundXMax = backImg.shape[1]
+        ezSkyBackgroundYMax = backImg.shape[0]
 
     imgaxes = fig.add_axes(ax.get_position(), label='image', xticks=[], yticks=[])
     #print(ax.get_position())
 
-    imgaxes.set_xlim(0, ezSkyBackground1XMax)
-    imgaxes.set_ylim(0, ezSkyBackground1YMax)
+    imgaxes.set_xlim(0, ezSkyBackgroundXMax)
+    imgaxes.set_ylim(0, ezSkyBackgroundYMax)
 
     plt.gca().invert_yaxis()
 
     # comment next line to remove background
-    img = imgaxes.imshow(backImg, aspect='auto')
+    if ezSkyBackgroundNb > 0:
+        img = imgaxes.imshow(backImg, aspect='auto')
 
     ax.set_axis_off()
 
     # map radec to background image
-    imgaxesRatioX = ezSkyBackground1XMax / 720
-    imgaxesRatioY = ezSkyBackground1YMax / 360
+    imgaxesRatioX = ezSkyBackgroundXMax / 720
+    imgaxesRatioY = ezSkyBackgroundYMax / 360
     raHalfDegScaled  = (720 - raHalfDeg ) * imgaxesRatioX
     decHalfDegScaled = (360 - decHalfDeg) * imgaxesRatioY
 
@@ -2277,9 +2311,10 @@ def plotEzSky300RB():
     global titleS                   # string
     #global ezSkyDispGrid           # integer
 
-    global ezSkyBackground1         # string
-    global ezSkyBackground1XMax     # integer
-    global ezSkyBackground1YMax     # integer
+    global ezSkyBackgroundNb        # integer
+    global ezSkyBackground          # string
+    global ezSkyBackgroundXMax      # integer
+    global ezSkyBackgroundYMax      # integer
 
     global ezColorMap               # string
 
@@ -2307,24 +2342,29 @@ def plotEzSky300RB():
     ax = fig.add_subplot(111)
 
     # plot RaDec background
-    backImg = plt.imread(ezSkyBackground1)    # Reeve map
+    if ezSkyBackgroundNb > 0:
+        backImg = plt.imread(ezSkyBackground)    # Reeve map
+        # Getting dimensions (height and width)
+        ezSkyBackgroundXMax = backImg.shape[1]
+        ezSkyBackgroundYMax = backImg.shape[0]
 
     imgaxes = fig.add_axes(ax.get_position(), label='image', xticks=[], yticks=[])
     #print(ax.get_position())
 
-    imgaxes.set_xlim(0, ezSkyBackground1XMax)
-    imgaxes.set_ylim(0, ezSkyBackground1YMax)
+    imgaxes.set_xlim(0, ezSkyBackgroundXMax)
+    imgaxes.set_ylim(0, ezSkyBackgroundYMax)
 
     plt.gca().invert_yaxis()
 
     # comment next line to remove background
-    img = imgaxes.imshow(backImg, aspect='auto')
+    if ezSkyBackgroundNb > 0:
+        img = imgaxes.imshow(backImg, aspect='auto')
 
     ax.set_axis_off()
 
     # map radec to background image
-    imgaxesRatioX = ezSkyBackground1XMax / 720
-    imgaxesRatioY = ezSkyBackground1YMax / 360
+    imgaxesRatioX = ezSkyBackgroundXMax / 720
+    imgaxesRatioY = ezSkyBackgroundYMax / 360
     raHalfDegScaled  = (720 - raHalfDeg ) * imgaxesRatioX
     decHalfDegScaled = (360 - decHalfDeg) * imgaxesRatioY
 
@@ -2370,9 +2410,10 @@ def plotEzSky301RBT():
     global titleS                   # string
     #global ezSkyDispGrid           # integer
 
-    global ezSkyBackground1         # string
-    global ezSkyBackground1XMax     # integer
-    global ezSkyBackground1YMax     # integer
+    global ezSkyBackgroundNb        # integer
+    global ezSkyBackground          # string
+    global ezSkyBackgroundXMax      # integer
+    global ezSkyBackgroundYMax      # integer
 
     global ezColorMap               # string
 
@@ -2402,21 +2443,29 @@ def plotEzSky301RBT():
     ax = fig.add_subplot(111)
 
     # plot RaDec background
-    backImg = plt.imread(ezSkyBackground1)    # Reeve map
+    if ezSkyBackgroundNb > 0:
+        backImg = plt.imread(ezSkyBackground)    # Reeve map
+        # Getting dimensions (height and width)
+        ezSkyBackgroundXMax = backImg.shape[1]
+        ezSkyBackgroundYMax = backImg.shape[0]
 
     imgaxes = fig.add_axes(ax.get_position(), label='image', xticks=[], yticks=[])
     #print(ax.get_position())
 
-    imgaxes.set_xlim(0, ezSkyBackground1XMax)
-    imgaxes.set_ylim(0, ezSkyBackground1YMax)
+    imgaxes.set_xlim(0, ezSkyBackgroundXMax)
+    imgaxes.set_ylim(0, ezSkyBackgroundYMax)
 
     plt.gca().invert_yaxis()
+
+    # comment next lines to remove background
+    if ezSkyBackgroundNb > 0:
+        img = imgaxes.imshow(backImg, aspect='auto')
 
     ax.set_axis_off()
 
     # map radec to background image
-    imgaxesRatioX = ezSkyBackground1XMax / 720
-    imgaxesRatioY = ezSkyBackground1YMax / 360
+    imgaxesRatioX = ezSkyBackgroundXMax / 720
+    imgaxesRatioY = ezSkyBackgroundYMax / 360
 
     print()
     print('                         radecPower.max() =', radecPower.max())
@@ -2536,9 +2585,10 @@ def plotEzSky309RBTC():
     global titleS                   # string
     #global ezSkyDispGrid           # integer
 
-    global ezSkyBackground1         # string
-    global ezSkyBackground1XMax     # integer
-    global ezSkyBackground1YMax     # integer
+    global ezSkyBackgroundNb        # integer
+    global ezSkyBackground          # string
+    global ezSkyBackgroundXMax      # integer
+    global ezSkyBackgroundYMax      # integer
 
     global ezColorMap               # string
 	
@@ -2568,24 +2618,29 @@ def plotEzSky309RBTC():
     ax = fig.add_subplot(111)
 
     # plot RaDec background
-    backImg = plt.imread(ezSkyBackground1)    # Reeve map
+    if ezSkyBackgroundNb > 0:
+        backImg = plt.imread(ezSkyBackground)    # Reeve map
+        # Getting dimensions (height and width)
+        ezSkyBackgroundXMax = backImg.shape[1]
+        ezSkyBackgroundYMax = backImg.shape[0]
 
     imgaxes = fig.add_axes(ax.get_position(), label='image', xticks=[], yticks=[])
     #print(ax.get_position())
 
-    imgaxes.set_xlim(0, ezSkyBackground1XMax)
-    imgaxes.set_ylim(0, ezSkyBackground1YMax)
+    imgaxes.set_xlim(0, ezSkyBackgroundXMax)
+    imgaxes.set_ylim(0, ezSkyBackgroundYMax)
 
     plt.gca().invert_yaxis()
 
     # comment next line to remove background
-    img = imgaxes.imshow(backImg, aspect='auto')
+    if ezSkyBackgroundNb > 0:
+        img = imgaxes.imshow(backImg, aspect='auto')
 
     ax.set_axis_off()
 
     # map radec to background image
-    imgaxesRatioX = ezSkyBackground1XMax / 720
-    imgaxesRatioY = ezSkyBackground1YMax / 360
+    imgaxesRatioX = ezSkyBackgroundXMax / 720
+    imgaxesRatioY = ezSkyBackgroundYMax / 360
 
     print()
     print('                         radecCount.max() =', radecCount.max())
@@ -3810,8 +3865,8 @@ def plotEzSky450RIR():
         imgaxes = fig.add_axes(ax.get_position(), label='image', xticks=[], yticks=[])
         #print(ax.get_position())
 
-        imgaxes.set_xlim(0, ezSkyBackground1XMax)
-        imgaxes.set_ylim(0, ezSkyBackground1YMax)
+        imgaxes.set_xlim(0, ezSkyBackgroundXMax)
+        imgaxes.set_ylim(0, ezSkyBackgroundYMax)
 
         plt.gca().invert_yaxis()
 

@@ -137,6 +137,8 @@ def printUsage():
     print()
     print('    -ezWhenPlotRangeL    0  100    (save only this range of ezWhen plots to file, to save time)')
     print()
+    print('    -ezSkyBackgroundNb   1         (choose a background image number to use, 0 = none)')
+    print()
     print('     -ezTextFontSize    10         (Size of text font)')
     print()
     print('    -ezDefaultsFile ../bigDish8.txt     (additional file of ezRA arguments)')
@@ -198,6 +200,8 @@ def ezWhenArgumentsFile(ezDefaultsFileNameInput):
     global ezWhenPlotRangeL                 # integer list
     global skyObjectL                       # list of strings
 
+    global ezSkyBackgroundNb                # integer
+
     global ezColAzDeg                       # float
     global ezColElDeg                       # float
     global coordType                        # integer
@@ -242,6 +246,9 @@ def ezWhenArgumentsFile(ezDefaultsFileNameInput):
 
             elif thisLine0Lower == '-ezRAObsName'.lower():
                 ezRAObsName = thisLine[1]
+
+            elif thisLine0Lower == '-ezSkyBackgroundNb'.lower():
+                ezSkyBackgroundNb = int(thisLine[1])
 
             elif thisLine0Lower == '-ezColAzimuth'.lower() or thisLine0Lower == '-ezColAzDeg'.lower():
                 ezColAzDeg = float(thisLine[1])
@@ -301,6 +308,8 @@ def ezWhenArgumentsCommandLine():
     global ezRAObsAmsl                      # float
     global ezRAObsName                      # string
     global ezWhenPlotRangeL                 # integer list
+
+    global ezSkyBackgroundNb                # integer
 
     global ezColAzDeg                       # float
     global ezColElDeg                       # float
@@ -378,6 +387,11 @@ def ezWhenArgumentsCommandLine():
                 cmdLineSplitIndex += 1
                 ezWhenPlotRangeL[1] = int(cmdLineSplit[cmdLineSplitIndex])
 
+
+            elif cmdLineArgLower == '-ezSkyBackgroundNb'.lower():
+                cmdLineSplitIndex += 1      # point to first argument value
+                ezSkyBackgroundNb  = int(cmdLineSplit[cmdLineSplitIndex])
+
             elif cmdLineArgLower == '-ezTextFontSize'.lower():
                 cmdLineSplitIndex += 1      # point to first argument value
                 ezTextFontSize = int(cmdLineSplit[cmdLineSplitIndex])
@@ -448,6 +462,10 @@ def ezWhenArguments():
     global coord0                           # float
     global coord1                           # float
 
+    global ezSkyBackgroundNb                # integer
+    global ezSkyBackground                  # string
+    global ezSkyBackgroundXMax              # integer
+    global ezSkyBackgroundYMax              # integer
 
     global ezTextFontSize                   # integer
     global ezTitleFontSize                  # integer
@@ -459,6 +477,8 @@ def ezWhenArguments():
     ezRAObsAmsl = -999.                 # silly number
     #ezRAObsName = 'LebanonKS'
     ezRAObsName = ''                    # silly name
+
+    ezSkyBackgroundNb = 0               # no default background image
 
     ezColAzDeg   = 180.0                # Azimuth            pointing of antenna (degrees)
     ezColElDeg   =  45.0                # Elevation          pointing of antenna (degrees)
@@ -497,6 +517,13 @@ def ezWhenArguments():
       ezTextFontSize = 6
     ezTitleFontSize = 2 + ezTextFontSize
     ezAxisFontSize = ezTextFontSize - 2
+
+    ezSkyBackgroundXMax = 1024 # default image size
+    ezSkyBackgroundYMax = 512  # default image size
+    if ezSkyBackgroundNb > 0:
+        ezSkyBackground = os.path.dirname(__file__) + os.path.sep + 'ezSkyBackground' + str(ezSkyBackgroundNb) + '.jpg'
+        if not os.path.exists(ezSkyBackground):
+            ezSkyBackgroundNb = -1  # Neutralise image if file doesn't exist
 
     # sanity tests
 
@@ -570,6 +597,16 @@ def ezWhenArguments():
         print(f'      ezColElDeg   = {coord1:0.1f}')
     print()
     print('      ezWhenPlotRangeL =', ezWhenPlotRangeL)
+    print()
+    if ezSkyBackgroundNb > 0:
+         print('      ezSkyBackgroundNb =', ezSkyBackgroundNb, ' = ', ezSkyBackground)
+    elif ezSkyBackgroundNb < 0:
+         print('      ezSkyBackgroundNb = not found')
+    else:
+         print('      ezSkyBackgroundNb = none')
+    print()
+    print('      ezTextFontSize =', ezTextFontSize)
+    print()
 
     if ezRAObsLat  < -90. or ezRAObsLon < -180. or ezRAObsAmsl < -990.:
         print()
@@ -939,6 +976,11 @@ def ezWhen050raDec():
     global titleS                           # string
     global ezWhenPlotRangeL                 # integer list
 
+    global ezSkyBackgroundNb                # integer
+    global ezSkyBackground                  # string
+    global ezSkyBackgroundXMax              # integer
+    global ezSkyBackgroundYMax              # integer
+
     global ezTextFontSize                   # integer
     global ezTitleFontSize                  # integer
     global ezAxisFontSize                   # integer
@@ -955,8 +997,22 @@ def ezWhen050raDec():
     fig = plt.figure()
     ax = fig.add_subplot()
 
+    # plot RaDec background
+    if ezSkyBackgroundNb > 0:
+        backImg = plt.imread(ezSkyBackground)    # Reeve map
+        # Getting dimensions (height and width)
+        ezSkyBackgroundXMax = backImg.shape[1]
+        ezSkyBackgroundYMax = backImg.shape[0]
+
+    # comment next line to remove background
+    if ezSkyBackgroundNb > 0:
+        img = ax.imshow(backImg, extent=[24., 0., -90., 90.], aspect='auto', zorder=0)
+    else:
+        ezWhenDispGrid = 1
+        plt.grid(ezWhenDispGrid, zorder=1)
+
     for i in range(len(azDegL)):
-        plt.scatter(raHL[i], decDegL[i], marker=markerSL[i], s=100., c=colorSL[i])
+        plt.scatter(raHL[i], decDegL[i], marker=markerSL[i], s=100.0, c=colorSL[i], zorder=2)
 
     plt.title(titleS, fontsize=ezTitleFontSize)
 
