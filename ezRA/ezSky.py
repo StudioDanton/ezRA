@@ -2159,7 +2159,7 @@ def plotEzSky201RBMax():
 
     if nMaxRight + 1:                               # if not silly value, plot MaxRight
         # if have Galactic plane galRaHDegRight054304 data for this declination
-        if 54 <= decHalfDeg[nMaxRight] and decHalfDeg[nMaxRight] <= 304:
+        if 54 <= decHalfDeg[nMaxRight] and decHalfDeg[nMaxRight] < 304:
             # Right Ascension (hours) difference from Galactic Plane data
             #print(f'\n          nMaxRight at decHalfDeg = {decHalfDeg[nMaxRight]}',
             #    f'  raHalfDeg = {raHalfDeg[nMaxRight]}')
@@ -2175,7 +2175,7 @@ def plotEzSky201RBMax():
 
     if nMaxLeft + 1:                               # if not silly value, plot MaxLeft
         # if have Galactic plane galRaHDegLeft054304 data for this declination
-        if 54 <= decHalfDeg[nMaxLeft] and decHalfDeg[nMaxLeft] <= 304:
+        if 54 <= decHalfDeg[nMaxLeft] and decHalfDeg[nMaxLeft] < 304:
             # Right Ascension (hours) difference from Galactic Plane data
             #print(f'\n          nMaxLeft  at decHalfDeg = {decHalfDeg[nMaxRight]}',
             #    f'  raHalfDeg = {raHalfDeg[nMaxRight]}')
