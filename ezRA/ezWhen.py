@@ -61,8 +61,10 @@ programRevision = programName
 # ezWhen231009a,
 
 import os
+import sys
 from astropy.time import Time
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def printUsage():
@@ -99,9 +101,14 @@ def printUsage():
     print('    -ezRAObsLon    -98.5696          (Observatory Longitude (degrees))')
     print('    -ezRAObsAmsl   563.88            (Observatory Above Mean Sea Level (meters))')
     print()
+    print('    -ezColAzDeg     180.0            (Azimuth            antenna pointing (degrees))')
+    print('    -ezColElDeg      45.0            (Elevation          antenna pointing (degrees))')
+    print()
     print('     Sun and/or Moon:')
     print('         Sun')
     print('         Moon')
+    print()
+    print('     Antenna')
     print()
     print('     Below uses "P" for Plus, and "M" for Minus.')
     print()
@@ -171,9 +178,9 @@ def printHello():
     print('=================================================')
     ###############################################print(' Local time =', time.asctime(time.localtime()))
     print(' programRevision =', programRevision)
+    print(' Python sys.version =', sys.version)
     print()
 
-    import sys
     commandString = '  '.join(sys.argv)
     print(' This Python command = ' + commandString)
 
@@ -188,6 +195,10 @@ def ezWhenArgumentsFile(ezDefaultsFileNameInput):
     global ezRAObsName                      # string
     global ezWhenPlotRangeL                 # integer list
     global skyObjectL                       # list of strings
+
+    global ezColAzDeg                       # float
+    global ezColElDeg                       # float
+    global coordType                        # integer
 
     print()
     print('   ezWhenArgumentsFile(' + ezDefaultsFileNameInput + ') ===============')
@@ -227,6 +238,14 @@ def ezWhenArgumentsFile(ezDefaultsFileNameInput):
 
             elif thisLine0Lower == '-ezRAObsName'.lower():
                 ezRAObsName = thisLine[1]
+
+            elif thisLine0Lower == '-ezColAzimuth'.lower() or thisLine0Lower == '-ezColAzDeg'.lower():
+                ezColAzDeg = float(thisLine[1])
+                coordType = 0               # AzEl
+
+            elif thisLine0Lower == '-ezColElevation'.lower() or thisLine0Lower == '-ezColElDeg'.lower():
+                ezColElDeg = float(thisLine[1])
+                coordType = 0               # AzEl
 
             elif thisLine0Lower == '-ezWhenPlotRangeL'.lower():
                 ezWhenPlotRangeL[0] = int(thisLine[1])
@@ -275,6 +294,10 @@ def ezWhenArgumentsCommandLine():
     global ezRAObsAmsl                      # float
     global ezRAObsName                      # string
     global ezWhenPlotRangeL                 # integer list
+
+    global ezColAzDeg                       # float
+    global ezColElDeg                       # float
+    global coordType                        # integer
 
     print()
     print('   ezWhenArgumentsCommandLine ===============')
@@ -329,6 +352,16 @@ def ezWhenArgumentsCommandLine():
             elif cmdLineArgLower == '-ezRAObsName'.lower():
                 cmdLineSplitIndex += 1      # point to first argument value
                 ezRAObsName = cmdLineSplit[cmdLineSplitIndex]   # cmd line allows only one ezRAObsName word
+
+            elif cmdLineArgLower == '-ezColAzimuth'.lower() or cmdLineArgLower == '-ezColAzDeg'.lower():
+                cmdLineSplitIndex += 1      # point to first argument value
+                ezColAzDeg = float(cmdLineSplit[cmdLineSplitIndex])
+                coordType = 0               # AzEl
+
+            elif cmdLineArgLower == '-ezColElevation'.lower() or cmdLineArgLower == '-ezColElDeg'.lower():
+                cmdLineSplitIndex += 1      # point to first argument value
+                ezColElDeg = float(cmdLineSplit[cmdLineSplitIndex])
+                coordType = 0               # AzEl
 
             elif cmdLineArgLower == '-ezWhenPlotRangeL'.lower():
                 cmdLineSplitIndex += 1
@@ -396,12 +429,22 @@ def ezWhenArguments():
     global ezRAObsName                      # string
     global ezWhenPlotRangeL                 # integer list
 
+    global ezColAzDeg                       # float
+    global ezColElDeg                       # float
+    global coordType                        # integer
+    global coord0                           # float
+    global coord1                           # float
+
     # defaults
     ezRAObsLat  = -999.                 # silly number
     ezRAObsLon  = -999.                 # silly number
     ezRAObsAmsl = -999.                 # silly number
     #ezRAObsName = 'LebanonKS'
     ezRAObsName = ''                    # silly name
+
+    ezColAzDeg   = 180.0                # Azimuth            pointing of antenna (degrees)
+    ezColElDeg   =  45.0                # Elevation          pointing of antenna (degrees)
+    coordType    = 0                    # AzEl
 
     ezWhenPlotRangeL = [0, 9999]        # save this range of plots to file
 
@@ -458,6 +501,11 @@ def ezWhenArguments():
         print()
         exit()
 
+    # now know coordType, assign coord0, and coord1
+    if coordType == 0:
+        coord0     = ezColAzDeg
+        coord1     = ezColElDeg
+
     # set UTC day
     if not len(dayYYMMDD):
         datetimeNowUTC = Time.now()
@@ -490,6 +538,10 @@ def ezWhenArguments():
     print('      ezRAObsLat  =', ezRAObsLat)
     print('      ezRAObsLon  =', ezRAObsLon)
     print('      ezRAObsAmsl =', ezRAObsAmsl)
+    print()
+    if coordType == 0:              # AzEl
+        print(f'      ezColAzDeg   = {coord0:0.1f}')
+        print(f'      ezColElDeg   = {coord1:0.1f}')
     print()
     print('      ezWhenPlotRangeL =', ezWhenPlotRangeL)
 
@@ -524,6 +576,10 @@ def ezWhenPlotPrep():
     global titleS                           # string
     global dateUTCValue                     # class 'astropy.time.core.Time'
     global skyObjectL                       # list of strings
+
+    global coordType                        # integer
+    global coord0                           # float
+    global coord1                           # float
 
     global azDegL                           # list of floats
     global elDegL                           # list of floats
@@ -659,6 +715,10 @@ def ezWhenPlotPrep():
         elif skyObjectSThis == 'sun':
             pass            # pointingTelescopeThis created in special case below
 
+        # Antenna
+        elif skyObjectSThis == 'antenna':
+            pass            # pointingTelescopeThis created in special case below
+
         else:
             print()
             print()
@@ -728,6 +788,12 @@ def ezWhenPlotPrep():
                 pointingTelescopeThis = SkyCoord(ra = raHThis*u.hour, dec = decDegThis*u.deg,
                     frame = 'icrs', location = locBase)
 
+            elif skyObjectSThis == 'antenna':
+                # special case because simple Antenna does not moves across the sky
+                # Azimut coordinates (Alt-Az)
+                pointingTelescopeThis = SkyCoord(az=coord0 * u.deg, alt=coord1 * u.deg,
+                    frame=AltAz(obstime=datetimeUTCValue, location=locBase))
+
             # extract AzEl coordinates
             azEl = pointingTelescopeThis.transform_to(AltAz(obstime=datetimeUTCValue, location=locBase))
             #print(' azEl =', azEl)
@@ -764,7 +830,7 @@ def ezWhenPlotPrep():
             decDegL.append(decDeg)
             gLatDegL.append(gLatDeg)
             gLonDegL.append(gLonDeg)
-            markerSL.append(f'${markerS[skyObjectIndex]}{hourUTC}$')
+            markerSL.append(f'${markerS[skyObjectIndex]}{hourUTC:02d}$')
             colorSL.append(colorSMenuL[skyObjectIndex % colorSMenuLen])
 
         legendSL.append(f'{markerS[skyObjectIndex]}  {skyObjectL[skyObjectIndex]}')
