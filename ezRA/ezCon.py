@@ -2296,7 +2296,7 @@ def openFileStudy():
 
     ## data/rqv8ezb220218_00a.txt
     #                        4321-
-    fileWriteNameStudy = 'ezConStudy' + fileNameLast.split(os.path.sep)[-1][:-4] + '.txt'
+    fileWriteNameStudy = fileNameLast.split(os.path.sep)[-1][:-4] + '_ezConStudy.log' # Always working filename with subdirectory inside fileNameLast
     print('   opening', fileWriteNameStudy)
 
     # before much calculating, get proof can open output file
