@@ -211,6 +211,8 @@ def printUsage():
     print()
     print('    -ezRAObsName         bigDish    (observatory name for plot titles)')
     print()
+    print('    -ezColorMap          gnuplot    (color map: jet, turbo, gnuplot2, viridis, plasma..., none = gnuplot)')
+    print()
     print('    -ezGal510Csv         1           (create CSV file of ezGal510 for 3d plots with rinearn.com/en-us/graph3d)')
     print()
     print('    -ezGalVelGLonEdgeLevelL  1.06   40   140    (velGLon level for ezGal540velGLonEdgesB)')
@@ -265,6 +267,7 @@ def printHello():
     print('=================================================')
     print(' Local time =', time.asctime(time.localtime()))
     print(' programRevision =', programRevision)
+    print(' Python sys.version =', sys.version)
     print()
 
     commandString = '  '.join(sys.argv)
@@ -276,6 +279,7 @@ def ezGalArgumentsFile(ezDefaultsFileNameInput):
     # process arguments from file
 
     global ezRAObsName                      # string
+    global ezColorMap                       # string
 
     global ezGalDispGrid                    # integer
 
@@ -322,6 +326,8 @@ def ezGalArgumentsFile(ezDefaultsFileNameInput):
                 #ezRAObsName = uni.encode(thisLine[1])
                 #ezRAObsName = str.encode(thisLine[1])
 
+            if thisLine0Lower == '-ezColorMap'.lower():
+                ezColorMap = thisLine[1]
 
             # integer arguments:
             elif thisLine0Lower == '-ezGal510Csv'.lower():
@@ -398,6 +404,7 @@ def ezGalArgumentsCommandLine():
     global commandString                    # string
 
     global ezRAObsName                      # string
+    global ezColorMap                       # string
 
     global ezGal510Csv                      # integer
     global ezGal540edgesUFile               # string
@@ -462,6 +469,8 @@ def ezGalArgumentsCommandLine():
                 #ezRAObsName = uni.encode(thisLine[1])
                 #ezRAObsName = str.encode(thisLine[1])
             
+            elif cmdLineArgLower == 'ezColorMap'.lower():
+                ezColorMap = cmdLineSplit[cmdLineSplitIndex]   # cmd line allows only one word
 
             # integer arguments:
             elif cmdLineArgLower == 'ezGal510Csv'.lower():
@@ -538,6 +547,7 @@ def ezGalArguments():
     # argument: (Computing) a value or address passed to a procedure or function at the time of call
 
     global ezRAObsName                      # string
+    global ezColorMap                       # string
 
     global ezGal510Csv                      # integer
     global ezGal540edgesUFile               # string
@@ -554,6 +564,7 @@ def ezGalArguments():
     #ezRAObsName = 'LebanonKS'
     #ezRAObsName = 'defaultKS'
     ezRAObsName = ''                # overwritten by optional argument
+    ezColorMap = 'gnuplot'          # default color map
 
     ezGal510Csv = 0                 # to disable
     ezGal540edgesUFile = ''
@@ -581,6 +592,7 @@ def ezGalArguments():
     # print status
     print()
     print('   ezRAObsName =', ezRAObsName)
+    print('   ezColorMap =', ezColorMap)
     print()
     print('   ezGal510Csv =', ezGal510Csv)
     print('   ezGal540edgesUFile =', ezGal540edgesUFile)
@@ -833,6 +845,8 @@ def plotEzGal510velGLon():
     global ezGalPlotRangeL          # integer list
     global ezGal510Csv              # integer
 
+    global ezColorMap               # string
+
     plotCountdown -= 1
 
     # if anything in velGLonP180 to save or plot
@@ -876,8 +890,8 @@ def plotEzGal510velGLon():
         #    np.mean(velGLonP180[~np.isnan(velGLonP180)]))
         print('                         np.mean(velGLonP180) =', np.mean(velGLonP180))
         print('                         np.nanmin(velGLonP180) =', np.nanmin(velGLonP180))
-        pts = plt.contourf(xi, yi, velGLonP180, 100, cmap=plt.get_cmap('gnuplot'))
-        #pts = plt.contourf(xi, yi, velGLonP180, 100, cmap=plt.get_cmap('gnuplot'), vmin=1.025, vmax=1.21)
+        pts = plt.contourf(xi, yi, velGLonP180, 100, cmap=plt.get_cmap(ezColorMap))
+        #pts = plt.contourf(xi, yi, velGLonP180, 100, cmap=plt.get_cmap(ezColorMap), vmin=1.025, vmax=1.21)
 
         #gridColor = 'black'
         gridColor = 'white'
@@ -1223,6 +1237,8 @@ def plotEzGal520velGLonPolarI():
     global fileFreqBinQty           # integer
     global ezGalPlotRangeL          # integer list
 
+    global ezColorMap               # string
+
     plotCountdown -= 1
 
     # if anything in velGLonP180 to plot
@@ -1242,7 +1258,7 @@ def plotEzGal520velGLonPolarI():
         r, theta = np.meshgrid(rad, azm)
 
         plt.grid(0)
-        im = plt.pcolormesh(theta, r, velGLonP180.T, cmap=plt.get_cmap('gnuplot'), shading='auto')
+        im = plt.pcolormesh(theta, r, velGLonP180.T, cmap=plt.get_cmap(ezColorMap), shading='auto')
 
         fig.colorbar(im, ax=ax, pad=0.1)
 
@@ -1287,6 +1303,8 @@ def plotEzGal521velGLonPolarD():
     global fileFreqBinQty           # integer
     global ezGalPlotRangeL          # integer list
 
+    global ezColorMap               # string
+
     plotCountdown -= 1
 
     # if anything in velGLonP180 to plot
@@ -1306,7 +1324,7 @@ def plotEzGal521velGLonPolarD():
         r, theta = np.meshgrid(rad, azm)
 
         plt.grid(0)
-        im = plt.pcolormesh(theta, r, velGLonP180[::-1].T, cmap=plt.get_cmap('gnuplot'), shading='auto')
+        im = plt.pcolormesh(theta, r, velGLonP180[::-1].T, cmap=plt.get_cmap(ezColorMap), shading='auto')
 
         fig.colorbar(im, ax=ax, pad=0.1)
 
@@ -1350,6 +1368,8 @@ def plotEzGal529velGLonPolarCount():
     global fileFreqBinQty           # integer
     global ezGalPlotRangeL          # integer list
 
+    global ezColorMap               # string
+
     plotCountdown -= 1
 
     # if anything in velGLonP180 to plot
@@ -1374,7 +1394,7 @@ def plotEzGal529velGLonPolarCount():
                 velGLonP180CountPolar[gLonP180, :] += velGLonP180Count[gLonP180]
 
         plt.grid(0)
-        im = plt.pcolormesh(theta, r, velGLonP180CountPolar, cmap=plt.get_cmap('gnuplot'), shading='auto')
+        im = plt.pcolormesh(theta, r, velGLonP180CountPolar, cmap=plt.get_cmap(ezColorMap), shading='auto')
 
         fig.colorbar(im, ax=ax, pad=0.1)
 
@@ -1419,6 +1439,8 @@ def plotEzGal530galDecGLon():
     #global ezGalDispGrid            # integer
     global ezGalPlotRangeL          # integer list
 
+    global ezColorMap               # string
+
     plotCountdown -= 1
 
     # if anything in velGLonP180 to plot
@@ -1446,7 +1468,7 @@ def plotEzGal530galDecGLon():
             maskThisOff = (velGLonP180 < maskOffBelowThis)
             velGLonP180[maskThisOff] = np.nan
 
-        pts = plt.contourf(xi, yi, galDecP90GLonP180Count, 20, cmap=plt.get_cmap('gnuplot'))
+        pts = plt.contourf(xi, yi, galDecP90GLonP180Count, 20, cmap=plt.get_cmap(ezColorMap))
 
         #gridColor = 'black'
         gridColor = 'white'
@@ -1770,6 +1792,8 @@ def plotEzGal540velGLonEdgesB():
     global velGLonUEdge             # float array
     global velGLonLEdge             # float array
 
+    global ezColorMap               # string
+
     plotCountdown -= 1
 
     # if not wanted, or nothing in velGLonP180 to save or plot
@@ -1804,8 +1828,8 @@ def plotEzGal540velGLonEdgesB():
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    pts = plt.contourf(xi, yi, velGLonP180, 100, cmap=plt.get_cmap('gnuplot'))
-    #pts = plt.contourf(xi, yi, velGLonP180, 100, cmap=plt.get_cmap('gnuplot'), vmin=1.025, vmax=1.21)
+    pts = plt.contourf(xi, yi, velGLonP180, 100, cmap=plt.get_cmap(ezColorMap))
+    #pts = plt.contourf(xi, yi, velGLonP180, 100, cmap=plt.get_cmap(ezColorMap), vmin=1.025, vmax=1.21)
 
     #gridColor = 'black'
     gridColor = 'white'
@@ -2301,6 +2325,8 @@ def plotEzGal570galArmsSun():
     global titleS                   # string
     global ezGalPlotRangeL          # integer list
 
+    global ezColorMap               # string
+
     plotCountdown -= 1
 
     # if not wanted, or nothing in velGLonP180 to save or plot
@@ -2361,7 +2387,7 @@ def plotEzGal570galArmsSun():
                 plotRadii[plotRadii < 0.] = np.nan
 
                 polarPlot = ax.scatter(gLonDegRadMany, plotRadii,
-                    c=velGLonP180[:,gLonDegP180], s=1, cmap=plt.get_cmap('gnuplot'), alpha=0.75)
+                    c=velGLonP180[:,gLonDegP180], s=1, cmap=plt.get_cmap(ezColorMap), alpha=0.75)
 
                 # use negative sqrt()
                 addend12 = -np.sqrt(addend1p2)      # np.sqrt passes np.nan
@@ -2370,7 +2396,7 @@ def plotEzGal570galArmsSun():
                 plotRadii[plotRadii < 0.] = np.nan
 
                 polarPlot = ax.scatter(gLonDegRadMany, plotRadii,
-                    c=velGLonP180[:,gLonDegP180], s=1, cmap=plt.get_cmap('gnuplot'), alpha=0.75)
+                    c=velGLonP180[:,gLonDegP180], s=1, cmap=plt.get_cmap(ezColorMap), alpha=0.75)
 
         # Add a color bar which maps values to colors.
         plt.colorbar(polarPlot, pad=0.1)
@@ -2416,6 +2442,8 @@ def plotEzGal580galArmsGC():
 
     global titleS                   # string
     global ezGalPlotRangeL          # integer list
+
+    global ezColorMap               # string
 
     plotCountdown -= 1
 
@@ -2555,7 +2583,7 @@ def plotEzGal580galArmsGC():
         fig = plt.figure()
         ax = fig.add_subplot()
 
-        img = plt.imshow(zi, aspect='auto', cmap=plt.get_cmap('gnuplot'))
+        img = plt.imshow(zi, aspect='auto', cmap=plt.get_cmap(ezColorMap))
         # Add a color bar which maps values to colors.
         plt.colorbar(img, orientation='vertical', pad=0.1)
 

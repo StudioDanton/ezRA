@@ -272,6 +272,8 @@ def printUsage():
     print()
     print('    -ezRAObsName         bigDish   (observatory name for plot titles)')
     print()
+    print('    -ezColorMap          gnuplot   (color map: jet, turbo, gnuplot2, viridis, plasma..., none = gnuplot)')
+    print()
     print('    -ezSkyInput          18        (choose input .ezb data column)')
     print()
     print("    -ezSkyAddRAH         9.4       (add to data file's Right Ascension (hours))")
@@ -388,6 +390,7 @@ def ezSkyArgumentsFile(ezDefaultsFileNameInput):
     # process arguments from file
 
     global ezRAObsName                      # string
+    global ezColorMap                       # string
 
     global ezSkyAddRAH                      # float
     global ezSkyAddDecDeg                   # float
@@ -446,6 +449,9 @@ def ezSkyArgumentsFile(ezDefaultsFileNameInput):
                 ezRAObsName = fileLineSplit[1]
                 #ezRAObsName = uni.encode(fileLineSplit[1])
                 #ezRAObsName = str.encode(fileLineSplit[1])
+
+            elif fileLineSplit0Lower == '-ezColorMap'.lower():
+                ezColorMap = fileLineSplit[1]
 
             # ezSky arguments:
             elif fileLineSplit0Lower == '-ezSkyAddRAH'.lower():
@@ -563,6 +569,7 @@ def ezSkyArgumentsCommandLine():
     global commandString                    # string
 
     global ezRAObsName                      # string
+    global ezColorMap                       # string
 
     global ezSkyAddRAH                      # float
     global ezSkyAddDecDeg                   # float
@@ -645,7 +652,9 @@ def ezSkyArgumentsCommandLine():
                 ezRAObsName = cmdLineSplit[cmdLineSplitIndex]   # cmd line allows only one ezRAObsName word
                 #ezRAObsName = uni.encode(cmdLineSplit[cmdLineSplitIndex])
                 #ezRAObsName = str.encode(cmdLineSplit[cmdLineSplitIndex])
-            
+
+            elif cmdLineArgLower == 'ezColorMap'.lower():
+                ezColorMap = cmdLineSplit[cmdLineSplitIndex]   # cmd line allows only one word
 
             # ezSky arguments:
             elif cmdLineArgLower == 'ezSkyAddRAH'.lower():
@@ -804,9 +813,12 @@ def ezSkyArguments():
     global ezSkyBackground1XMax             # integer
     global ezSkyBackground1YMax             # integer
 
+    global ezColorMap                       # string
+
     # defaults
     #ezRAObsName = 'LebanonKS'
     ezRAObsName = ''                        # silly name
+    ezColorMap = 'gnuplot'                  # default color map
 
     ezSkyAddRAH    = 0.
     ezSkyAddDecDeg = 0.
@@ -881,6 +893,7 @@ def ezSkyArguments():
     # print status
     print()
     print('   ezRAObsName =', ezRAObsName)
+    print('   ezColorMap =', ezColorMap)
     print()
     print('   ezSkyAddRAH    =', ezSkyAddRAH)
     print('   ezSkyAddDecDeg =', ezSkyAddDecDeg)
@@ -2228,6 +2241,8 @@ def plotEzSky300RB():
     global ezSkyBackground1XMax     # integer
     global ezSkyBackground1YMax     # integer
 
+    global ezColorMap               # string
+
     plotCountdown -= 1
 
     # if plot not wanted, then return
@@ -2270,7 +2285,7 @@ def plotEzSky300RB():
 
     # plot each radecPower value as a dot with a radecPower color
     pts = plt.scatter(raHalfDegScaled, decHalfDegScaled, s=1, marker='|',
-        c=radecPower, cmap=plt.get_cmap('gnuplot'))
+        c=radecPower, cmap=plt.get_cmap(ezColorMap))
 
     cbar = plt.colorbar(pts, orientation='horizontal', shrink=0.3, pad=0.06)
     cbar.ax.tick_params(labelsize=6)
@@ -2313,6 +2328,8 @@ def plotEzSky301RBT():
     global ezSkyBackground1         # string
     global ezSkyBackground1XMax     # integer
     global ezSkyBackground1YMax     # integer
+
+    global ezColorMap               # string
 
     global ezSkyMaskValue           # float
 
@@ -2397,13 +2414,13 @@ def plotEzSky301RBT():
     #        reachTallDecHalfDegScaled = reachTallDec * imgaxesRatioY
     #        # plot each radecPower value as a dot with a radecPower color
     #        pts = plt.scatter(raHalfDegScaled, decHalfDegScaled-reachTallDecHalfDegScaled,
-    #            s=1, marker='|', c=radecPower, cmap=plt.get_cmap('gnuplot'))
+    #            s=1, marker='|', c=radecPower, cmap=plt.get_cmap(ezColorMap))
     #        pts = plt.scatter(raHalfDegScaled, decHalfDegScaled+reachTallDecHalfDegScaled,
-    #            s=1, marker='|', c=radecPower, cmap=plt.get_cmap('gnuplot'))
+    #            s=1, marker='|', c=radecPower, cmap=plt.get_cmap(ezColorMap))
     #        cbar2 = plt.colorbar(pts, orientation='horizontal', shrink=0.3, pad=0.06)
     #    # plot center, without offset
     #    pts = plt.scatter(raHalfDegScaled, decHalfDegScaled,
-    #        s=1, marker='|', c=radecPower, cmap=plt.get_cmap('gnuplot'))
+    #        s=1, marker='|', c=radecPower, cmap=plt.get_cmap(ezColorMap))
 
     # plot center, without offset
     #raHalfDegScaledAll = raHalfDegScaled + 0.
@@ -2425,7 +2442,7 @@ def plotEzSky301RBT():
             radecPower, radecPower])
     # plot center, without offset
     pts = plt.scatter(raHalfDegScaledAll, decHalfDegScaledAll,
-        s=1, marker='|', c=radecPowerAll, cmap=plt.get_cmap('gnuplot'))
+        s=1, marker='|', c=radecPowerAll, cmap=plt.get_cmap(ezColorMap))
     # free memory
     raHalfDegScaledAll  = []
     decHalfDegScaledAll = []
@@ -2473,6 +2490,8 @@ def plotEzSky309RBTC():
     global ezSkyBackground1XMax     # integer
     global ezSkyBackground1YMax     # integer
 
+    global ezColorMap               # string
+	
     global ezSkyMaskValue           # float
 
     plotCountdown -= 1
@@ -2557,7 +2576,7 @@ def plotEzSky309RBTC():
             radecCount, radecCount])
     # plot center, without offset
     pts = plt.scatter(raHalfDegScaledAll, decHalfDegScaledAll,
-        s=1, marker='|', c=radecCountAll, cmap=plt.get_cmap('gnuplot'))
+        s=1, marker='|', c=radecCountAll, cmap=plt.get_cmap(ezColorMap))
     # free memory
     raHalfDegScaledAll  = []
     decHalfDegScaledAll = []
@@ -2602,6 +2621,8 @@ def plotEzSky400RI():
     global ezSkyBallCsv             # float
 
     global ezSkyMaskValue           # float
+
+    global ezColorMap               # string
 
     plotCountdown -= 1
 
@@ -2716,7 +2737,7 @@ def plotEzSky400RI():
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    plt.contourf(xi, yi, zi, 100, cmap=plt.get_cmap('gnuplot'))
+    plt.contourf(xi, yi, zi, 100, cmap=plt.get_cmap(ezColorMap))
     # draw small black dots where data was sampled
     ax.scatter(raHalfDeg, decHalfDeg-180., marker='.', s=0.5,
         color='black', linewidths=0)
@@ -2981,7 +3002,7 @@ def plotEzSky405RIL():
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    plt.contourf(xi, yi, zi, 100, cmap=plt.get_cmap('gnuplot'))
+    plt.contourf(xi, yi, zi, 100, cmap=plt.get_cmap(ezColorMap))
     # breadcrumbs
     if ezSkyXYLimL[6]:
         raDeg = raH * 15.
@@ -3049,6 +3070,8 @@ def plotEzSky406RILC():
     global plotCountdown            # integer
     global fileNameLast             # string
     global titleS                   # string
+
+    global ezColorMap               # string
 
     plotCountdown -= 1
 
@@ -3256,7 +3279,7 @@ def plotEzSky406RILC():
     #zi = gaussian_filter(zi, 9.)
     #zi = gaussian_filter(zi, 1.)
 
-    #plt.contourf(xi, yi, zi, 100, cmap=plt.get_cmap('gnuplot'))
+    #plt.contourf(xi, yi, zi, 100, cmap=plt.get_cmap(ezColorMap))
 
     # breadcrumbs
     if ezSkyXYLimL[6]:
@@ -3320,6 +3343,8 @@ def plotEzSky450RIR():
     global titleS                   # string
 
     global ezSkyMaskValue           # float
+
+    global ezColorMap               # string
 
     plotCountdown -= 1
 
@@ -3706,7 +3731,7 @@ def plotEzSky450RIR():
 
 
     # plot contour lines and contour fills
-    plt.contourf(xiHalfDeg, yiHalfDeg, zi, 100, cmap=plt.get_cmap('gnuplot'))
+    plt.contourf(xiHalfDeg, yiHalfDeg, zi, 100, cmap=plt.get_cmap(ezColorMap))
 
 
 
@@ -3729,7 +3754,7 @@ def plotEzSky450RIR():
 
     ylabelText = f'{ezSkyInputS[2:]} Interpolated in Mollweide Galactic Coordinates'
 
-    #plt.contourf(xiHalfDeg, yiHalfDeg, zi, 100, cmap=plt.get_cmap('gnuplot'))
+    #plt.contourf(xiHalfDeg, yiHalfDeg, zi, 100, cmap=plt.get_cmap(ezColorMap))
 
     if 0:
         ax.scatter(raHalfDeg, decHalfDeg-180., marker='.', s=0.5,
@@ -4138,6 +4163,8 @@ def plotEzSky500GMI():
     global titleS                           # string
     #global ezSkyDispGrid                   # integer
 
+    global ezColorMap                       # string
+
     plotCountdown -= 1
 
     # if plot not wanted, then return
@@ -4249,7 +4276,7 @@ def plotEzSky500GMI():
 
     # plot contour lines and contour fills
     plt.contour(xi, yi, zi, 20, linewidths=0.2, colors='black')
-    plt.contourf(xi, yi, zi, 100, cmap=plt.get_cmap('gnuplot'))
+    plt.contourf(xi, yi, zi, 100, cmap=plt.get_cmap(ezColorMap))
 
     # optional thin black lines of true data
     ax.scatter(galacticGLonHalfDeg, galacticGLatHalfDeg, marker='.', s=0.5, color='black', linewidths=0)
@@ -4432,6 +4459,8 @@ def plotEzSky505GMIL():
     global titleS                           # string
     #global ezSkyDispGrid                   # integer
 
+    global ezColorMap               # string
+
     plotCountdown -= 1
 
     # if plot not wanted, then return
@@ -4523,7 +4552,7 @@ def plotEzSky505GMIL():
 
     # plot contour lines and contour fills
     #plt.contour(xi, yi, zi, 20, linewidths=0.2, colors='black')
-    plt.contourf(xi, yi, zi, 100, cmap=plt.get_cmap('gnuplot'))
+    plt.contourf(xi, yi, zi, 100, cmap=plt.get_cmap(ezColorMap))
 
     # breadcrumbs
     if ezSkyXYLimL[6]:
@@ -4600,6 +4629,8 @@ def plotEzSky510GSI():
     global fileNameLast                     # string
     global titleS                           # string
     #global ezSkyDispGrid                   # integer
+
+    global ezColorMap                       # string
 
     plotCountdown -= 1
 
@@ -4719,7 +4750,7 @@ def plotEzSky510GSI():
 
     # plot contour lines and contour fills
     plt.contour(xi, yi, zi, 20, linewidths=0.2, colors='black')
-    plt.contourf(xi, yi, zi, 100, cmap=plt.get_cmap('gnuplot'))
+    plt.contourf(xi, yi, zi, 100, cmap=plt.get_cmap(ezColorMap))
 
     # Draw thin black lines of true data paths.
     # Likewise, after accounting for offsets,
@@ -4785,6 +4816,8 @@ def plotEzSkyMollweide(plotNumber):
     global fileNameLast                     # string
     global titleS                           # string
     #global ezSkyDispGrid                   # integer
+
+    global ezColorMap                       # string
 
     plotCountdown -= 1
 
@@ -4986,7 +5019,7 @@ def plotEzSkyMollweide(plotNumber):
 
         # plot contour lines and contour fills
         plt.contour(xi, yi, zi, 20, linewidths=0.2, colors='black')
-        plt.contourf(xi, yi, zi, 100, cmap=plt.get_cmap('gnuplot'))
+        plt.contourf(xi, yi, zi, 100, cmap=plt.get_cmap(ezColorMap))
 
         if ezSky520Csv:
             plotNameCsv = plotName[:-3] + 'csv'
@@ -5135,9 +5168,9 @@ def plotEzSky600azEl():
     #ax.set_axis_off()
 
     #pts = plt.scatter(azDeg, elDeg,
-    #    s=1, marker='|', c=power, cmap=plt.get_cmap('gnuplot'))
+    #    s=1, marker='|', c=power, cmap=plt.get_cmap(ezColorMap))
     pts = plt.scatter(azDeg, elDeg,
-        s=10, marker='.', c=power, cmap=plt.get_cmap('gnuplot'))
+        s=10, marker='.', c=power, cmap=plt.get_cmap(ezColorMap))
 
     cbar = plt.colorbar(pts, orientation='horizontal', shrink=0.3, pad=0.06)
     cbar.ax.tick_params(labelsize=6)

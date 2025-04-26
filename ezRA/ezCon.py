@@ -492,6 +492,8 @@ def printUsage():
     print('    -ezCon399SignalSampleByFreqBinL     18  1423')
     print('         (plot antenna sample 1423 spectrum By FreqBin of signal 18 (of ezbMenu columns 10, 12, 14, 16, 18))')
     print()
+    print('    -ezColorMap          gnuplot        (color map: jet, turbo, gnuplot2, viridis, plasma..., none = gnuplot)')
+    print()
     print('    -ezDefaultsFile ../bigDish8.txt     (additional file of ezRA arguments)')
     print()
     print('    -eXXXXXXXXXXXXXXzIgonoreThisWholeOneWord')
@@ -604,6 +606,8 @@ def ezConArgumentsFile(ezDefaultsFileNameInput):
     global ezConGalCrossingGLonNear         # float
     global ezConGalRaDecNearNearL           # float list
 
+    global ezColorMap                       # string
+
     print()
     print('   ezConArgumentsFile(' + ezDefaultsFileNameInput + ') ===============')
 
@@ -642,6 +646,9 @@ def ezConArgumentsFile(ezDefaultsFileNameInput):
 
             elif thisLine0Lower == '-ezRAObsName'.lower():
                 ezRAObsName = thisLine[1]
+
+            elif thisLine0Lower == '-ezColorMap'.lower():
+                ezColorMap = thisLine[1]
 
             # integer arguments:
             elif thisLine0Lower == '-ezConInputdBm'.lower():
@@ -863,6 +870,8 @@ def ezConArgumentsCommandLine():
     global ezRAObsAmsl                      # float
     global ezRAObsName                      # string
 
+    global ezColorMap                       # string
+
     global ezConAzimuth                     # float - force Azimuth   (Degrees)
     global ezConElevation                   # float - force Elevation (Degrees)
     global ezConAddAzDeg                    # float - correction factor, add to file's Azimuth   (Degrees)
@@ -977,6 +986,10 @@ def ezConArgumentsCommandLine():
                 cmdLineSplitIndex += 1      # point to first argument value
                 ezRAObsName = cmdLineSplit[cmdLineSplitIndex]   # cmd line allows only one ezRAObsName word
             
+            elif cmdLineArgLower == '-ezColorMap'.lower():
+                cmdLineSplitIndex += 1      # point to first argument value
+                ezColorMap = cmdLineSplit[cmdLineSplitIndex]   # cmd line allows only one word
+
 
             # integer arguments:
             elif cmdLineArgLower == '-ezConInputdBm'.lower():
@@ -1295,6 +1308,8 @@ def ezConArguments():
     global ezRAObsAmsl                      # float
     global ezRAObsName                      # string
 
+    global ezColorMap                       # string
+
     global ezConAzimuth                     # float - force Azimuth   (Degrees)
     global ezConElevation                   # float - force Elevation (Degrees)
     global ezConAddAzDeg                    # float - correction factor, add to file's Azimuth   (Degrees)
@@ -1365,6 +1380,7 @@ def ezConArguments():
         ezRAObsAmsl = -999.                 # silly number
         #ezRAObsName = 'LebanonKS'
         ezRAObsName = ''                    # silly name
+        ezColorMap = 'gnuplot'              # default color map
 
         ezConInputdBm     =  0
         ezConUseRefSub    =  0
@@ -1600,6 +1616,8 @@ def ezConArguments():
         print('   ezConVelGLonEdgeLevel =', ezConVelGLonEdgeLevel)
         print()
         print('   ezConPlotRangeL       =', ezConPlotRangeL)
+        print()
+        print('   ezColorMap =', ezColorMap)
 
 
 
@@ -5872,6 +5890,8 @@ def plotEzCon1dSamplesAnt(plotName, plotData1d, plotYLimL, plotColorS, plotYLabe
     global xTickLabelsAnt                       # list          creation?
     global xLabelSAnt                           # string        creation?
 
+    global ezColorMap                           # string
+
     plt.clf()
 
     plt.plot(plotData1d, plotColorS)
@@ -5948,6 +5968,8 @@ def plotEzCon2dSamples(plotName, plotData2d, plotXLabel, plotXLast, plotYLabel, 
     global fileFreqBinQty                       # integer
     #global freqCenter                           # float
 
+    global ezColorMap                           # string
+
     # plot heat map of ant
     heatVMin = ezConHeatVMinMaxL[0]             # minimum 3d value (color), <=0 for autoscale
     heatVMax = ezConHeatVMinMaxL[1]             # maximum 3d value (color), <=0 for autoscale
@@ -5957,17 +5979,17 @@ def plotEzCon2dSamples(plotName, plotData2d, plotXLabel, plotXLast, plotYLabel, 
     if heatVMin <= 0:              # if should autoscale heatVMin
         if heatVMax <= 0:            # if should autoscale heatVMax
             # autoscale heatVMin and heatVMax
-            heat_map = sb.heatmap(plotData2d,                               cmap='gnuplot')
+            heat_map = sb.heatmap(plotData2d,                               cmap=ezColorMap)
         else:
             # only heatVMax available
-            heat_map = sb.heatmap(plotData2d,                vmax=heatVMax, cmap='gnuplot')
+            heat_map = sb.heatmap(plotData2d,                vmax=heatVMax, cmap=ezColorMap)
     else:
         if heatVMax <= 0:            # if should autoscale heatVMax
             # only heatVMin available
-            heat_map = sb.heatmap(plotData2d, vmin=heatVMin,                cmap='gnuplot')
+            heat_map = sb.heatmap(plotData2d, vmin=heatVMin,                cmap=ezColorMap)
         else:
             # heatVMin and heatVMax available
-            heat_map = sb.heatmap(plotData2d, vmin=heatVMin, vmax=heatVMax, cmap='gnuplot')
+            heat_map = sb.heatmap(plotData2d, vmin=heatVMin, vmax=heatVMax, cmap=ezColorMap)
 
     heat_map.set_title(titleS)
     if ezConDispGrid:
@@ -10419,6 +10441,8 @@ def plotEzCon510velGLon():
     #global ezConPlotRangeL          # integer list
     global ezConPlotRequestedL      # integer list
 
+    global ezColorMap               # string
+
     plotName = 'ezCon510velGLon.png'
 
     plotCountdown -= 1
@@ -10464,7 +10488,7 @@ def plotEzCon510velGLon():
         np.mean(velGLonP180[~np.isnan(velGLonP180)]))
     print('                         np.nanmin(velGLonP180) =', np.nanmin(velGLonP180))
 
-    pts = plt.contourf(xi, yi, velGLonP180, 100, cmap=plt.get_cmap('gnuplot'))
+    pts = plt.contourf(xi, yi, velGLonP180, 100, cmap=plt.get_cmap(ezColorMap))
 
     plt.axhline(y = 0, linewidth=0.5, color='black')
     plt.axvline(x =  90, linewidth=0.5, color='black')
@@ -10631,6 +10655,8 @@ def plotEzCon520velGLonPolar():
     #global ezConPlotRangeL          # integer list
     global ezConPlotRequestedL      # integer list
 
+    global ezColorMap               # string
+
     plotName = 'ezCon520velGLonPolar.png'     # Velocity by Galactic Longitude with pcolormesh
 
     plotCountdown -= 1
@@ -10656,7 +10682,7 @@ def plotEzCon520velGLonPolar():
 
     r, theta = np.meshgrid(rad, azm)
     plt.grid(0)
-    im = plt.pcolormesh(theta, r, velGLonP180.T, cmap=plt.get_cmap('gnuplot'), shading='auto')
+    im = plt.pcolormesh(theta, r, velGLonP180.T, cmap=plt.get_cmap(ezColorMap), shading='auto')
 
     fig.colorbar(im, ax=ax, pad=0.1)
 
@@ -10693,6 +10719,9 @@ def plotEzCon529velGLonPolarCount():
     #global ezConPlotRangeL          # integer list
     global ezConPlotRequestedL      # integer list
 
+    global ezColorMap               # string
+
+
     plotName = 'ezCon529velGLonPolarCount.png'     # Velocity by Galactic Longitude with pcolormesh
 
     plotCountdown -= 1
@@ -10720,7 +10749,7 @@ def plotEzCon529velGLonPolarCount():
             velGLonP180CountPolar[gLonP180, :] += velGLonP180Count[gLonP180]
 
     plt.grid(0)
-    im = plt.pcolormesh(theta, r, velGLonP180CountPolar, cmap=plt.get_cmap('gnuplot'), shading='auto')
+    im = plt.pcolormesh(theta, r, velGLonP180CountPolar, cmap=plt.get_cmap(ezColorMap), shading='auto')
 
     fig.colorbar(im, ax=ax, pad=0.1)
 
@@ -10764,6 +10793,8 @@ def plotEzCon530galDecGLon():
     #global ezConPlotRangeL          # integer list
     global ezConPlotRequestedL      # integer list
 
+    global ezColorMap               # string
+
     plotName = 'ezCon530galDecGLon.png'
 
     plotCountdown -= 1
@@ -10794,7 +10825,7 @@ def plotEzCon530galDecGLon():
         maskThisOff = (velGLonP180 < maskOffBelowThis)
         velGLonP180[maskThisOff] = np.nan
 
-    pts = plt.contourf(xi, yi, galDecP90GLonP180Count, 20, cmap=plt.get_cmap('gnuplot'))
+    pts = plt.contourf(xi, yi, galDecP90GLonP180Count, 20, cmap=plt.get_cmap(ezColorMap))
 
     plt.axhline(y =  90, linewidth=0.5, color='black')
     plt.axvline(x =  90, linewidth=0.5, color='black')
@@ -11013,6 +11044,8 @@ def plotEzCon800antXTVTMaxIdxGLon():
     #global ezConPlotRangeL          # integer list
     global ezConPlotRequestedL      # integer list
 
+    global ezColorMap               # string
+
     plotName = 'ezCon800' + antXNameL[0] + 'TVTMaxIdxGLon.png'
 
     plotCountdown -= 1
@@ -11035,13 +11068,13 @@ def plotEzCon800antXTVTMaxIdxGLon():
 
     # ezConOut[:, 4] is gLon is RtoL from -180 thru 180
     #pts = plt.scatter(ezConOut[:, 4], velMaxIndex-120,
-    #    s=1, marker='|', c='green', cmap=plt.get_cmap('gnuplot'))
+    #    s=1, marker='|', c='green', cmap=plt.get_cmap(ezColorMap))
     #pts = plt.scatter(ezConOut[:, 4]+360., velMaxIndex-120,
-    #    s=1, marker='|', c='violet', cmap=plt.get_cmap('gnuplot'))
+    #    s=1, marker='|', c='violet', cmap=plt.get_cmap(ezColorMap))
     #pts = plt.scatter(ezConOut[:, 4], antXTVTMaxIndex,
-    #    s=1, marker='|', c='green', cmap=plt.get_cmap('gnuplot'))
+    #    s=1, marker='|', c='green', cmap=plt.get_cmap(ezColorMap))
     #pts = plt.scatter(ezConOut[:, 4]+360., antXTVTMaxIndex,
-    #    s=1, marker='|', c='violet', cmap=plt.get_cmap('gnuplot'))
+    #    s=1, marker='|', c='violet', cmap=plt.get_cmap(ezColorMap))
     pts = plt.scatter(ezConOut[:, 4], antXTVTMaxIndex,
         s=1, marker='|', c='green')
     pts = plt.scatter(ezConOut[:, 4]+360., antXTVTMaxIndex,
